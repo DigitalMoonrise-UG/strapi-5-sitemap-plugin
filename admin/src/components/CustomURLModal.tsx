@@ -1,8 +1,8 @@
-import { Button, SingleSelect, SingleSelectOption } from "@strapi/design-system";
-import { Grid } from "@strapi/design-system";
-import { Field } from "@strapi/design-system";
-import { Modal } from "@strapi/design-system";
-import React, {useEffect, useRef, useState} from "react";
+import { Button, SingleSelect, SingleSelectOption } from '@strapi/design-system';
+import { Grid } from '@strapi/design-system';
+import { Field } from '@strapi/design-system';
+import { Modal } from '@strapi/design-system';
+import React, { useEffect, useRef, useState } from 'react';
 import { PLUGIN_ID } from '../pluginId';
 import { getFetchClient } from '@strapi/strapi/admin';
 export default function CustomURLModal({
@@ -32,12 +32,15 @@ export default function CustomURLModal({
 
 	const { put, post } = getFetchClient();
 
-	const handleInputChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (event: React.ChangeEvent<HTMLInputElement>) => {
-		setter(event.target.value);
-	};
-	const handleSelectChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (event: string) => {
-		setter(event);
-	};
+	const handleInputChange =
+		(setter: React.Dispatch<React.SetStateAction<string>>) =>
+		(event: React.ChangeEvent<HTMLInputElement>) => {
+			setter(event.target.value);
+		};
+	const handleSelectChange =
+		(setter: React.Dispatch<React.SetStateAction<string>>) => (event: string) => {
+			setter(event);
+		};
 	const validateFields = () => {
 		if (!slug) {
 			slugRef.current?.focus();
@@ -109,23 +112,28 @@ export default function CustomURLModal({
 		<Modal.Root open={isOpen} onOpenChange={(e: boolean) => handleOnOpenChange(e)}>
 			<Modal.Content>
 				<Modal.Header>
-					<Modal.Title>
-						{typeToEdit ? 'Edit Custom URL' : 'Add Custom URL'}
-					</Modal.Title>
+					<Modal.Title>{typeToEdit ? 'Edit Custom URL' : 'Add Custom URL'}</Modal.Title>
 				</Modal.Header>
 				<Modal.Body>
 					<Grid.Root gap={4} col={1}>
 						<Grid.Item>
-							<Field.Root width='100%' hint="The slug of your custom URL">
+							<Field.Root width="100%" hint="The slug of your custom URL">
 								<Field.Label>Slug</Field.Label>
 								<Field.Input value={slug} onChange={handleInputChange(setSlug)} ref={slugRef} />
 								<Field.Hint />
 							</Field.Root>
 						</Grid.Item>
 						<Grid.Item>
-							<Field.Root width='100%' hint="The priority of your pages">
+							<Field.Root width="100%" hint="The priority of your pages">
 								<Field.Label>Priority</Field.Label>
-								<SingleSelect name="priority" required onChange={handleSelectChange(setPriority)} ref={priorityRef} value={priority} placeholder="Select Priority">
+								<SingleSelect
+									name="priority"
+									required
+									onChange={handleSelectChange(setPriority)}
+									ref={priorityRef}
+									value={priority}
+									placeholder="Select Priority"
+								>
 									<SingleSelectOption value="0.1">0.1</SingleSelectOption>
 									<SingleSelectOption value="0.2">0.2</SingleSelectOption>
 									<SingleSelectOption value="0.3">0.3</SingleSelectOption>
@@ -141,9 +149,16 @@ export default function CustomURLModal({
 							</Field.Root>
 						</Grid.Item>
 						<Grid.Item>
-							<Field.Root width='100%' hint="The changefrequency of your pages">
+							<Field.Root width="100%" hint="The changefrequency of your pages">
 								<Field.Label>Change Frequency</Field.Label>
-								<SingleSelect name="frequency" required onChange={handleSelectChange(setFrequency)} ref={frequencyRef} value={frequency} placeholder="Select Frequency">
+								<SingleSelect
+									name="frequency"
+									required
+									onChange={handleSelectChange(setFrequency)}
+									ref={frequencyRef}
+									value={frequency}
+									placeholder="Select Frequency"
+								>
 									<SingleSelectOption value="always">Always</SingleSelectOption>
 									<SingleSelectOption value="hourly">Hourly</SingleSelectOption>
 									<SingleSelectOption value="daily">Daily</SingleSelectOption>
@@ -159,10 +174,15 @@ export default function CustomURLModal({
 				</Modal.Body>
 				<Modal.Footer>
 					<Modal.Close>
-						<Button variant="tertiary" onClick={() => {
-							setTypeToEdit('');
-							setModalOpen(false)
-						}}>Cancel</Button>
+						<Button
+							variant="tertiary"
+							onClick={() => {
+								setTypeToEdit('');
+								setModalOpen(false);
+							}}
+						>
+							Cancel
+						</Button>
 					</Modal.Close>
 					<Button onClick={handleSubmit}>Confirm</Button>
 				</Modal.Footer>

@@ -3,9 +3,6 @@ declare const _default: {
         strapi: import("@strapi/types/dist/core").Strapi;
     }) => void;
     bootstrap: ({ strapi }: {
-        /**
-         * Plugin server methods
-         */
         strapi: import("@strapi/types/dist/core").Strapi;
     }) => Promise<void>;
     destroy: ({ strapi }: {
@@ -63,6 +60,8 @@ declare const _default: {
         service: ({ strapi }: {
             strapi: import("@strapi/types/dist/core").Strapi;
         }) => {
+            getNestedValue<T>(obj: Record<string, T | Record<string, any>>, path: string): T;
+            parseTableReferences(pattern: string): Record<string, any>;
             getSitemap(): Promise<string>;
             saveAdminData(data: any): Promise<{
                 message: string;

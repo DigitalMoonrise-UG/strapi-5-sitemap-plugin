@@ -65,6 +65,9 @@ const attributes$2 = {
   },
   thumbnail: {
     type: "string"
+  },
+  populateLinkedModels: {
+    type: "string"
   }
 };
 const schema$2 = {
@@ -340,6 +343,40 @@ const routes = {
   }
 };
 const service = ({ strapi }) => ({
+  getNestedValue(obj, path) {
+    return path.split(".").reduce((current, key) => {
+      return current && current[key] !== void 0 ? current[key] : null;
+    }, obj);
+  },
+  parseTableReferences(pattern) {
+    const populate = {};
+    const placeholders = pattern.match(/\[([^\]]+)]/g) || [];
+    for (const placeholder of placeholders) {
+      const content = placeholder.replace(/[\[\]]/g, "");
+      if (content.includes(".")) {
+        const parts = content.split(".");
+        parts.pop();
+        if (parts.length === 1) {
+          const table = parts[0];
+          populate[table] = true;
+        } else if (parts.length > 1) {
+          let current = populate;
+          for (let i = 0; i < parts.length; i++) {
+            const tableName = parts[i];
+            if (i === parts.length - 1) {
+              current[tableName] = true;
+            } else {
+              if (!current[tableName] || current[tableName] === true) {
+                current[tableName] = { populate: {} };
+              }
+              current = current[tableName].populate;
+            }
+          }
+        }
+      }
+    }
+    return Object.keys(populate).length > 0 ? { populate } : {};
+  },
   async getSitemap() {
     const sitemapEntries = await strapi.documents("plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-content-type").findMany();
     const customURLs = await strapi.db.query("plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-content-type-single-url").findMany();
@@ -350,7 +387,16 @@ const service = ({ strapi }) => ({
       const sitemap = [];
       for (const sitemapEntry of sitemapEntries) {
         const isValidThumbnail = sitemapEntry.thumbnail && sitemapEntry.thumbnail !== "-";
-        const populate = isValidThumbnail ? { [sitemapEntry.thumbnail]: true } : void 0;
+        let populate = isValidThumbnail ? { [sitemapEntry.thumbnail]: true } : void 0;
+        if (sitemapEntry.populateLinkedModels === "true") {
+          const linkedModels = this.parseTableReferences(sitemapEntry.pattern);
+          if (linkedModels.populate) {
+            populate = {
+              ...populate,
+              ...linkedModels.populate
+            };
+          }
+        }
         const entries = await strapi.documents(`api::${sitemapEntry.type}.${sitemapEntry.type}`).findMany({
           locale: sitemapEntry.langcode === "-" ? void 0 : sitemapEntry.langcode,
           status: "published",
@@ -359,14 +405,28 @@ const service = ({ strapi }) => ({
         collections.push({ ...sitemapEntry, entries });
       }
       collections.forEach((collection) => {
-        const { pattern, priority, frequency, entries, lastModified, thumbnail } = collection;
+        const {
+          pattern,
+          priority,
+          frequency,
+          entries,
+          lastModified,
+          thumbnail,
+          populateLinkedModels
+        } = collection;
         outerloop: for (const entry of entries) {
           let url = pattern;
-          const placeholders = pattern.match(/\[([^\]]+)\]/g) || [];
+          const placeholders = pattern.match(/\[([^\]]+)]/g) || [];
           for (const placeholder of placeholders) {
-            const key = placeholder.replace(/\[|\]/g, "");
-            if (entry[key]) {
-              url = url.replace(placeholder, entry[key]);
+            const key = placeholder.replace(/[\[\]]/g, "");
+            let value;
+            if (key.includes(".")) {
+              value = this.getNestedValue(entry, key);
+            } else {
+              value = entry[key];
+            }
+            if (value !== null && value !== void 0) {
+              url = url.replace(placeholder, value);
             } else {
               break outerloop;
             }
@@ -378,10 +438,14 @@ const service = ({ strapi }) => ({
             frequency,
             lastmod: void 0,
             thumbnail: void 0,
-            thumbnailTitle: void 0
+            thumbnailTitle: void 0,
+            populateLinkedModels: void 0
           };
           if (lastModified === "true") {
             sitemapEntry.lastmod = entry.updatedAt;
+          }
+          if (populateLinkedModels == "true") {
+            sitemapEntry.populateLinkedModels = true;
           }
           if (thumbnail !== "") {
             const media = Array.isArray(entry[thumbnail]) ? entry[thumbnail][0] : entry[thumbnail];
@@ -467,23 +531,32 @@ const service = ({ strapi }) => ({
     }
   },
   async getAllowedFields(contentTypeSingularName) {
-    const systemFields = ["createdAt", "updatedAt", "publishedAt", "createdBy", "updatedBy", "locale"];
+    const systemFields = [
+      "createdAt",
+      "updatedAt",
+      "publishedAt",
+      "createdBy",
+      "updatedBy",
+      "locale"
+    ];
     const contentType2 = Object.values(strapi.contentTypes).find(
       (type) => type.info.singularName === contentTypeSingularName
     );
     const fields = [];
-    Object.entries(contentType2.attributes).forEach(([fieldName, field]) => {
-      if (!systemFields.includes(fieldName) && field.type !== "relation" && field.type !== "component") {
-        fields.push(fieldName);
-      } else if (field.type === "relation" && field.relation.endsWith("ToOne") && !["createdBy", "updatedBy"].includes(fieldName)) {
-        fields.push(`${fieldName}.id`);
-      } else if (field.type === "component" && !field.repeatable) {
-        const component = strapi.components[field.component];
-        Object.keys(component.attributes).forEach((subFieldName) => {
-          fields.push(`${fieldName}.${subFieldName}`);
-        });
+    Object.entries(contentType2.attributes).forEach(
+      ([fieldName, field]) => {
+        if (!systemFields.includes(fieldName) && field.type !== "relation" && field.type !== "component") {
+          fields.push(fieldName);
+        } else if (field.type === "relation" && field.relation.endsWith("ToOne") && !["createdBy", "updatedBy"].includes(fieldName)) {
+          fields.push(`${fieldName}.id`);
+        } else if (field.type === "component" && !field.repeatable) {
+          const component = strapi.components[field.component];
+          Object.keys(component.attributes).forEach((subFieldName) => {
+            fields.push(`${fieldName}.${subFieldName}`);
+          });
+        }
       }
-    });
+    );
     if (!fields.includes("id")) {
       fields.push("id");
     }
@@ -503,7 +576,8 @@ const service = ({ strapi }) => ({
           priority: data.priority,
           frequency: data.frequency,
           lastModified: data.lastModified,
-          thumbnail: data.thumbnail
+          thumbnail: data.thumbnail,
+          populateLinkedModels: data.populateLinkedModels
         }
       });
       return {
@@ -574,7 +648,9 @@ const service = ({ strapi }) => ({
   },
   async getCustomURLs() {
     try {
-      const results = await strapi.documents("plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-content-type-single-url").findMany();
+      const results = await strapi.documents(
+        "plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-content-type-single-url"
+      ).findMany();
       return {
         results
       };
@@ -585,7 +661,9 @@ const service = ({ strapi }) => ({
   },
   async postCustomURLs(data) {
     try {
-      const result = await strapi.documents("plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-content-type-single-url").create({
+      const result = await strapi.documents(
+        "plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-content-type-single-url"
+      ).create({
         data
       });
       return {

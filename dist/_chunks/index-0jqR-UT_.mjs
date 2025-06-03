@@ -1,5 +1,4 @@
-"use strict";
-const react = require("react");
+import { useRef, useEffect } from "react";
 const __variableDynamicImportRuntimeHelper = (glob, path, segs) => {
   const v = glob[path];
   if (v) {
@@ -18,8 +17,8 @@ const __variableDynamicImportRuntimeHelper = (glob, path, segs) => {
 };
 const PLUGIN_ID = "strapi-5-sitemap-plugin";
 const Initializer = ({ setPlugin }) => {
-  const ref = react.useRef(setPlugin);
-  react.useEffect(() => {
+  const ref = useRef(setPlugin);
+  useEffect(() => {
     ref.current(PLUGIN_ID);
   }, []);
   return null;
@@ -43,7 +42,7 @@ const index = {
           id: "sitemap-settings",
           to: `/settings/${PLUGIN_ID}`,
           Component: async () => {
-            return Promise.resolve().then(() => require("./Settings-DYG07Rzf.js"));
+            return import("./Settings-C3a_cq7G.mjs");
           },
           permissions: [{ action: `plugin::${PLUGIN_ID}.settings.read`, subject: null }]
         }
@@ -60,7 +59,7 @@ const index = {
     return Promise.all(
       locales.map(async (locale) => {
         try {
-          const { default: data } = await __variableDynamicImportRuntimeHelper(/* @__PURE__ */ Object.assign({ "./translations/en.json": () => Promise.resolve().then(() => require("./en-B4KWt_jN.js")) }), `./translations/${locale}.json`, 3);
+          const { default: data } = await __variableDynamicImportRuntimeHelper(/* @__PURE__ */ Object.assign({ "./translations/en.json": () => import("./en-Byx4XI2L.mjs") }), `./translations/${locale}.json`, 3);
           return { data, locale };
         } catch {
           return { data: {}, locale };
@@ -69,5 +68,7 @@ const index = {
     );
   }
 };
-exports.PLUGIN_ID = PLUGIN_ID;
-exports.index = index;
+export {
+  PLUGIN_ID as P,
+  index as i
+};

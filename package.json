@@ -29,35 +29,36 @@
 		"verify": "strapi-plugin verify",
 		"test:ts:front": "run -T tsc -p admin/tsconfig.json",
 		"test:ts:back": "run -T tsc -p server/tsconfig.json",
-		"test": "vitest"
+		"test": "vitest",
+		"prettier": "prettier . --write"
 	},
 	"dependencies": {
-		"@strapi/design-system": "^2.0.0-rc.14",
-		"@strapi/icons": "^2.0.0-rc.14",
-		"react-intl": "^7.1.0"
+		"@strapi/design-system": "^2.0.0-rc.24",
+		"@strapi/icons": "^2.0.0-rc.24",
+		"react-intl": "^7.1.11"
 	},
 	"devDependencies": {
-		"@strapi/sdk-plugin": "^5.3.0",
-		"@strapi/strapi": "^5.7.0",
-		"@strapi/typescript-utils": "^5.7.0",
-		"@types/react": "^19.0.4",
-		"@types/react-dom": "^19.0.2",
-		"prettier": "^3.4.2",
+		"@strapi/sdk-plugin": "^5.3.2",
+		"@strapi/strapi": "^5.14.0",
+		"@strapi/typescript-utils": "^5.14.0",
+		"@types/react": "^19.1.6",
+		"@types/react-dom": "^19.1.5",
+		"prettier": "^3.5.3",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
-		"react-router-dom": "^6.28.1",
-		"styled-components": "^6.1.14",
-		"typescript": "^5.7.3",
-		"vite": "^6.2.2",
-		"vitest": "^3.0.9"
+		"react-router-dom": "^6.30.1",
+		"styled-components": "^6.1.18",
+		"typescript": "^5.8.3",
+		"vite": "^6.3.5",
+		"vitest": "^3.2.0"
 	},
 	"peerDependencies": {
-		"@strapi/sdk-plugin": "^5.3.0",
-		"@strapi/strapi": "^5.7.0",
+		"@strapi/sdk-plugin": "^5.3.2",
+		"@strapi/strapi": "^5.14.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
-		"react-router-dom": "^6.28.1",
-		"styled-components": "^6.1.14"
+		"react-router-dom": "^6.30.1",
+		"styled-components": "^6.1.18"
 	},
 	"strapi": {
 		"kind": "plugin",

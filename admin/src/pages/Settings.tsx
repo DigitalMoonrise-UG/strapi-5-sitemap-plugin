@@ -1,11 +1,28 @@
-import React, {useEffect, useState} from 'react';
-import {Main, Box, Typography, Button, Table, Thead, Tr, Th, VisuallyHidden, Tbody, TFooter, Td, IconButton, Flex, Field, LinkButton} from '@strapi/design-system';
-import {Grid} from '@strapi/design-system';
-import {Pencil, Plus, Trash} from "@strapi/icons";
-import CollectionTypeModal from "../components/CollectionTypeModal";
-import {PLUGIN_ID} from "../pluginId";
+import React, { useEffect, useState } from 'react';
+import {
+	Main,
+	Box,
+	Typography,
+	Button,
+	Table,
+	Thead,
+	Tr,
+	Th,
+	VisuallyHidden,
+	Tbody,
+	TFooter,
+	Td,
+	IconButton,
+	Flex,
+	Field,
+	LinkButton,
+} from '@strapi/design-system';
+import { Grid } from '@strapi/design-system';
+import { Pencil, Plus, Trash } from '@strapi/icons';
+import CollectionTypeModal from '../components/CollectionTypeModal';
+import { PLUGIN_ID } from '../pluginId';
 import { Modal } from '@strapi/design-system';
-import CustomURLModal from "../components/CustomURLModal";
+import CustomURLModal from '../components/CustomURLModal';
 import { getFetchClient } from '@strapi/strapi/admin';
 
 const Settings = () => {
@@ -87,12 +104,24 @@ const Settings = () => {
 
 	const handleEdit = (entry: any, type: string) => {
 		if (type === 'collectionType') {
-			const id = collectionTypes.find((colType) => colType.type === entry.type && colType.langcode === entry.langcode && colType.pattern === entry.pattern && colType.priority === entry.priority && colType.frequency === entry.frequency).id;
+			const id = collectionTypes.find(
+				(colType) =>
+					colType.type === entry.type &&
+					colType.langcode === entry.langcode &&
+					colType.pattern === entry.pattern &&
+					colType.priority === entry.priority &&
+					colType.frequency === entry.frequency
+			).id;
 			setEditID(id);
 			setTypeToEdit(entry);
 			setModalOpen(true);
 		} else if (type === 'customURL') {
-			const id = customURLs.find((customURL) => customURL.slug === entry.slug && customURL.priority === entry.priority && customURL.frequency === entry.frequency).id;
+			const id = customURLs.find(
+				(customURL) =>
+					customURL.slug === entry.slug &&
+					customURL.priority === entry.priority &&
+					customURL.frequency === entry.frequency
+			).id;
 			setEditID(id);
 			setTypeToEdit(entry);
 			setCustomURLsModalOpen(true);
@@ -101,12 +130,24 @@ const Settings = () => {
 
 	const handleDelete = (entry: any, type: string) => {
 		if (type === 'collectionType') {
-			const id = collectionTypes.find((colType) => colType.type === entry.type && colType.langcode === entry.langcode && colType.pattern === entry.pattern && colType.priority === entry.priority && colType.frequency === entry.frequency).id;
+			const id = collectionTypes.find(
+				(colType) =>
+					colType.type === entry.type &&
+					colType.langcode === entry.langcode &&
+					colType.pattern === entry.pattern &&
+					colType.priority === entry.priority &&
+					colType.frequency === entry.frequency
+			).id;
 			setEntryToDelete(id);
 			setEntryToDeleteType('collection');
 			setDeleteModalOpen(true);
 		} else if (type === 'customURL') {
-			const id = customURLs.find((customURL) => customURL.slug === entry.slug && customURL.priority === entry.priority && customURL.frequency === entry.frequency).id;
+			const id = customURLs.find(
+				(customURL) =>
+					customURL.slug === entry.slug &&
+					customURL.priority === entry.priority &&
+					customURL.frequency === entry.frequency
+			).id;
 			setEntryToDelete(id);
 			setDeleteModalOpen(true);
 			setEntryToDeleteType('customURL');
@@ -166,7 +207,14 @@ const Settings = () => {
 					</Grid.Item>
 					<Grid.Item col={6}>
 						<Box textAlign="right" width="100%">
-							<LinkButton variant="default" marginRight={2} isExternal href={"/api/strapi-5-sitemap-plugin/sitemap.xml"}>Show Sitemap</LinkButton>
+							<LinkButton
+								variant="default"
+								marginRight={2}
+								isExternal
+								href={'/api/strapi-5-sitemap-plugin/sitemap.xml'}
+							>
+								Show Sitemap
+							</LinkButton>
 						</Box>
 					</Grid.Item>
 				</Grid.Root>
@@ -178,14 +226,25 @@ const Settings = () => {
 					</Typography>
 				</Box>
 				<Flex gap={2}>
-					<Field.Root name="baseURL" required width='100%' hint={`What is your base URL? (e. g. https://www.example.com)`}>
+					<Field.Root
+						name="baseURL"
+						required
+						width="100%"
+						hint={`What is your base URL? (e. g. https://www.example.com)`}
+					>
 						<Field.Label>Base URL</Field.Label>
-						<Field.Input value={baseURL} onChange={handleInputChange(setBaseURL)}/>
+						<Field.Input value={baseURL} onChange={handleInputChange(setBaseURL)} />
 						<Field.Hint />
 					</Field.Root>
-					<Button variant="default" marginRight={2} onClick={() => {
-						saveBaseURL();
-					}}>Save</Button>
+					<Button
+						variant="default"
+						marginRight={2}
+						onClick={() => {
+							saveBaseURL();
+						}}
+					>
+						Save
+					</Button>
 				</Flex>
 			</Box>
 			<Box paddingLeft={10} paddingRight={10} paddingBottom={10}>
@@ -194,7 +253,15 @@ const Settings = () => {
 						Collection Types
 					</Typography>
 				</Box>
-				<Table colCount={10} rowCount={6} footer={<TFooter icon={<Plus />} onClick={() => setModalOpen(true)}>Add another field to this collection type</TFooter>}>
+				<Table
+					colCount={10}
+					rowCount={6}
+					footer={
+						<TFooter icon={<Plus />} onClick={() => setModalOpen(true)}>
+							Add another field to this collection type
+						</TFooter>
+					}
+				>
 					<Thead>
 						<Tr>
 							<Th>
@@ -224,43 +291,49 @@ const Settings = () => {
 						</Tr>
 					</Thead>
 					<Tbody>
-						{collectionTypes.length > 0 && collectionTypes.map((collectionType: any, index: number) => (
-							<Tr key={index}>
-								<Td>
-									<Typography variant="sigma">{collectionType.type}</Typography>
-								</Td>
-								<Td>
-									<Typography variant="sigma">{collectionType.langcode}</Typography>
-								</Td>
-								<Td>
-									<Typography variant="sigma">{collectionType.pattern}</Typography>
-								</Td>
-								<Td>
-									<Typography variant="sigma">{collectionType.priority}</Typography>
-								</Td>
-								<Td>
-									<Typography variant="sigma">{collectionType.frequency}</Typography>
-								</Td>
-								<Td>
-									<Typography variant="sigma">{collectionType.lastModified}</Typography>
-								</Td>
-								<Td>
-									<Typography variant="sigma">{collectionType.thumbnail}</Typography>
-								</Td>
-							<Td>
-							</Td>
-								<Td>
-									<Flex gap={1}>
-									<IconButton onClick={() => handleEdit(collectionType, 'collectionType')} label="Edit">
-											<Pencil />
-										</IconButton>
-									<IconButton onClick={() => handleDelete(collectionType, 'collectionType')} label="Delete">
-											<Trash />
-										</IconButton>
-									</Flex>
-								</Td>
-							</Tr>
-						))}
+						{collectionTypes.length > 0 &&
+							collectionTypes.map((collectionType: any, index: number) => (
+								<Tr key={index}>
+									<Td>
+										<Typography variant="sigma">{collectionType.type}</Typography>
+									</Td>
+									<Td>
+										<Typography variant="sigma">{collectionType.langcode}</Typography>
+									</Td>
+									<Td>
+										<Typography variant="sigma">{collectionType.pattern}</Typography>
+									</Td>
+									<Td>
+										<Typography variant="sigma">{collectionType.priority}</Typography>
+									</Td>
+									<Td>
+										<Typography variant="sigma">{collectionType.frequency}</Typography>
+									</Td>
+									<Td>
+										<Typography variant="sigma">{collectionType.lastModified}</Typography>
+									</Td>
+									<Td>
+										<Typography variant="sigma">{collectionType.thumbnail}</Typography>
+									</Td>
+									<Td></Td>
+									<Td>
+										<Flex gap={1}>
+											<IconButton
+												onClick={() => handleEdit(collectionType, 'collectionType')}
+												label="Edit"
+											>
+												<Pencil />
+											</IconButton>
+											<IconButton
+												onClick={() => handleDelete(collectionType, 'collectionType')}
+												label="Delete"
+											>
+												<Trash />
+											</IconButton>
+										</Flex>
+									</Td>
+								</Tr>
+							))}
 					</Tbody>
 				</Table>
 			</Box>
@@ -270,7 +343,15 @@ const Settings = () => {
 						Custom URLs
 					</Typography>
 				</Box>
-				<Table colCount={10} rowCount={6} footer={<TFooter icon={<Plus />} onClick={() => setCustomURLsModalOpen(true)}>Add another custom URL</TFooter>}>
+				<Table
+					colCount={10}
+					rowCount={6}
+					footer={
+						<TFooter icon={<Plus />} onClick={() => setCustomURLsModalOpen(true)}>
+							Add another custom URL
+						</TFooter>
+					}
+				>
 					<Thead>
 						<Tr>
 							<Th>
@@ -288,35 +369,59 @@ const Settings = () => {
 						</Tr>
 					</Thead>
 					<Tbody>
-						{customURLs.length > 0 && customURLs.map((customURL: any, index: number) => (
-							<Tr key={index}>
-								<Td>
-									<Typography variant="sigma">{customURL.slug}</Typography>
-								</Td>
-								<Td>
-									<Typography variant="sigma">{customURL.priority}</Typography>
-								</Td>
-								<Td>
-									<Typography variant="sigma">{customURL.frequency}</Typography>
-								</Td>
-								<Td>
-									<Flex gap={1}>
-										<IconButton onClick={() => handleEdit(customURL, 'customURL')} label="Edit">
-											<Pencil />
-										</IconButton>
-									<IconButton onClick={() => handleDelete(customURL, 'customURL')} label="Delete">
-											<Trash />
-										</IconButton>
-									</Flex>
-								</Td>
-							</Tr>
-						))}
+						{customURLs.length > 0 &&
+							customURLs.map((customURL: any, index: number) => (
+								<Tr key={index}>
+									<Td>
+										<Typography variant="sigma">{customURL.slug}</Typography>
+									</Td>
+									<Td>
+										<Typography variant="sigma">{customURL.priority}</Typography>
+									</Td>
+									<Td>
+										<Typography variant="sigma">{customURL.frequency}</Typography>
+									</Td>
+									<Td>
+										<Flex gap={1}>
+											<IconButton onClick={() => handleEdit(customURL, 'customURL')} label="Edit">
+												<Pencil />
+											</IconButton>
+											<IconButton
+												onClick={() => handleDelete(customURL, 'customURL')}
+												label="Delete"
+											>
+												<Trash />
+											</IconButton>
+										</Flex>
+									</Td>
+								</Tr>
+							))}
 					</Tbody>
 				</Table>
 			</Box>
 
-			{modalOpen && <CollectionTypeModal isOpen={modalOpen} setModalOpen={setModalOpen} setNewCollectionTypeAdded={setNewCollectionTypeAdded} typeToEdit={typeToEdit} setTypeToEdit={setTypeToEdit} editID={editID} setEditID={setEditID} />}
-			{customURLsModalOpen && <CustomURLModal isOpen={customURLsModalOpen} setModalOpen={setCustomURLsModalOpen} setNewCustomURLAdded={setNewCustomURLAdded} typeToEdit={typeToEdit} setTypeToEdit={setTypeToEdit} editID={editID} setEditID={setEditID} />}
+			{modalOpen && (
+				<CollectionTypeModal
+					isOpen={modalOpen}
+					setModalOpen={setModalOpen}
+					setNewCollectionTypeAdded={setNewCollectionTypeAdded}
+					typeToEdit={typeToEdit}
+					setTypeToEdit={setTypeToEdit}
+					editID={editID}
+					setEditID={setEditID}
+				/>
+			)}
+			{customURLsModalOpen && (
+				<CustomURLModal
+					isOpen={customURLsModalOpen}
+					setModalOpen={setCustomURLsModalOpen}
+					setNewCustomURLAdded={setNewCustomURLAdded}
+					typeToEdit={typeToEdit}
+					setTypeToEdit={setTypeToEdit}
+					editID={editID}
+					setEditID={setEditID}
+				/>
+			)}
 
 			{deleteModalOpen && (
 				<Modal.Root open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
@@ -328,13 +433,19 @@ const Settings = () => {
 							<Typography>Are you sure you want to delete this entry?</Typography>
 						</Modal.Body>
 						<Modal.Footer>
-							<Button variant="tertiary" onClick={() => {
-								setDeleteModalOpen(false);
-								setEntryToDelete(null);
-								setEntryToDeleteType('');
-							}}>
-								Cancel</Button>
-							<Button variant="danger" onClick={confirmDelete}>Delete</Button>
+							<Button
+								variant="tertiary"
+								onClick={() => {
+									setDeleteModalOpen(false);
+									setEntryToDelete(null);
+									setEntryToDeleteType('');
+								}}
+							>
+								Cancel
+							</Button>
+							<Button variant="danger" onClick={confirmDelete}>
+								Delete
+							</Button>
 						</Modal.Footer>
 					</Modal.Content>
 				</Modal.Root>

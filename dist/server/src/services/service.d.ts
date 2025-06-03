@@ -2,6 +2,8 @@ import type { Core } from '@strapi/strapi';
 declare const service: ({ strapi }: {
     strapi: Core.Strapi;
 }) => {
+    getNestedValue<T>(obj: Record<string, T | Record<string, any>>, path: string): T;
+    parseTableReferences(pattern: string): Record<string, any>;
     getSitemap(): Promise<string>;
     saveAdminData(data: any): Promise<{
         message: string;

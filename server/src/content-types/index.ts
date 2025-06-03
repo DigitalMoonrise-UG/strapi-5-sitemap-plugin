@@ -1,6 +1,6 @@
 import contentType from '../../content-types/strapi-5-sitemap-plugin-content-type';
-import contentTypeSingle from "../../content-types/strapi-5-sitemap-plugin-content-type-single-url";
-import options from "../../content-types/strapi-5-sitemap-plugin-option";
+import contentTypeSingle from '../../content-types/strapi-5-sitemap-plugin-content-type-single-url';
+import options from '../../content-types/strapi-5-sitemap-plugin-option';
 
 export default {
 	'strapi-5-sitemap-plugin-content-type': contentType,

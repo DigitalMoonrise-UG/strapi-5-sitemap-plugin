@@ -22,6 +22,12 @@ describe('Sitemap service', () => {
 									priority: 0.5,
 									frequency: 'daily',
 								},
+								{
+									pattern: 'test3/[nested.url]/[url]',
+									type: 'test3',
+									priority: 0.1,
+									frequency: 'daily',
+								},
 							]),
 						};
 					case 'api::test.test':
@@ -38,6 +44,12 @@ describe('Sitemap service', () => {
 								{ url: null, other: 'other' }, // would generate invalid url
 								{ url: '789', other: null }, // would generate invalid url
 							]),
+						};
+					case 'api::test3.test3':
+						return {
+							findMany: vi
+								.fn()
+								.mockReturnValue([{ nested: { url: 'parent-url' }, url: 'child-url' }]),
 						};
 					case 'plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-option':
 						return {
@@ -95,7 +107,7 @@ describe('Sitemap service', () => {
 		const normalized = normalizeXml(sitemap);
 		const expected = normalizeXml(`
       <?xml version="1.0" encoding="UTF-8"?>
-      <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"  xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
           <url>
               <loc>https://example.com/test/123</loc>
               <priority>0.5</priority>
@@ -104,6 +116,11 @@ describe('Sitemap service', () => {
           <url>
               <loc>https://example.com/test2/456/other</loc>
               <priority>0.5</priority>
+              <changefreq>daily</changefreq>
+          </url>
+           <url>
+              <loc>https://example.com/test3/parent-url/child-url</loc>
+              <priority>0.1</priority>
               <changefreq>daily</changefreq>
           </url>
           <url>

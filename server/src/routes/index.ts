@@ -1,7 +1,7 @@
 'use strict';
 
-import frontend from "./frontend";
-import admin from "./admin";
+import frontend from './frontend';
+import admin from './admin';
 
 export default {
 	frontend: {

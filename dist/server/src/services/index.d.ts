@@ -2,6 +2,8 @@ declare const _default: {
     service: ({ strapi }: {
         strapi: import("@strapi/types/dist/core").Strapi;
     }) => {
+        getNestedValue<T>(obj: Record<string, T | Record<string, any>>, path: string): T;
+        parseTableReferences(pattern: string): Record<string, any>;
         getSitemap(): Promise<string>;
         saveAdminData(data: any): Promise<{
             message: string;
