@@ -1,6 +1,45 @@
 import type {Core} from '@strapi/strapi';
 
 const service = ({strapi}: { strapi: Core.Strapi }) => ({
+	getNestedValue<T>(obj: Record<string, T | Record<string, any>>, path: string): T {
+		return path.split('.').reduce((current, key) => {
+			return current && current[key] !== undefined ? current[key] : null;
+		}, obj) as T;
+	},
+	parseTableReferences(pattern: string): Record<string, any> {
+		const populate: Record<string, any> = {};
+		const placeholders = pattern.match(/\[([^\]]+)]/g) || [];
+
+		for (const placeholder of placeholders) {
+			const content = placeholder.replace(/[\[\]]/g, '');
+			if (content.includes('.')) {
+				const parts = content.split('.');
+				parts.pop();
+
+				if (parts.length === 1) {
+					const table = parts[0];
+					populate[table] = true;
+				} else if (parts.length > 1) {
+					let current = populate;
+
+					for (let i = 0; i < parts.length; i++) {
+						const tableName = parts[i];
+
+						if (i === parts.length - 1) {
+							current[tableName] = true;
+						} else {
+							if (!current[tableName] || current[tableName] === true) {
+								current[tableName] = { populate: {} };
+							}
+							current = current[tableName].populate;
+						}
+					}
+				}
+			}
+		}
+
+		return Object.keys(populate).length > 0 ? { populate } : {};
+	},
 	async getSitemap() {
 		const sitemapEntries = await strapi.documents('plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-content-type').findMany();
 		const customURLs = await strapi.db.query('plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-content-type-single-url').findMany();
@@ -13,32 +52,73 @@ const service = ({strapi}: { strapi: Core.Strapi }) => ({
 
 			for (const sitemapEntry of sitemapEntries) {
 				const isValidThumbnail = sitemapEntry.thumbnail && sitemapEntry.thumbnail !== '-';
-				const populate = isValidThumbnail ? { [sitemapEntry.thumbnail]: true } : undefined;
+				let populate = isValidThumbnail ? { [sitemapEntry.thumbnail]: true } : undefined;
 
-				const entries = await strapi.documents(`api::${sitemapEntry.type}.${sitemapEntry.type}`).findMany({
-					locale: sitemapEntry.langcode === '-' ? undefined : sitemapEntry.langcode,
-					status: 'published',
-					populate
-				});
+				if (sitemapEntry.populateLinkedModels === 'true') {
+					const linkedModels = this.parseTableReferences(sitemapEntry.pattern);
+					if (linkedModels.populate) {
+						populate = {
+							...populate,
+							...linkedModels.populate,
+						};
+					}
+				}
+
+				const entries = await strapi
+					.documents(`api::${sitemapEntry.type}.${sitemapEntry.type}`)
+					.findMany({
+						locale: sitemapEntry.langcode === '-' ? undefined : sitemapEntry.langcode,
+						status: 'published',
+						populate,
+					});
 
 				collections.push({ ...sitemapEntry, entries });
 			}
 
 			collections.forEach((collection) => {
-				const { pattern, priority, frequency, entries, lastModified, thumbnail } = collection;
+				const {
+					pattern,
+					priority,
+					frequency,
+					entries,
+					lastModified,
+					thumbnail,
+					populateLinkedModels,
+				} = collection;
 				outerloop: for (const entry of entries) {
 					let url = pattern;
+					const placeholders = pattern.match(/\[([^\]]+)]/g) || [];
+					let hasInvalidPlaceholder = false;
 
-					const placeholders = pattern.match(/\[([^\]]+)\]/g) || [];
 					for (const placeholder of placeholders) {
-						const key = placeholder.replace(/\[|\]/g, '');
-						if (entry[key]) {
-							url = url.replace(placeholder, entry[key]);
+						const key = placeholder.replace(/[\[\]]/g, '');
+
+						// Support nested object references with dot notation
+						let value: any;
+						if (key.includes('.')) {
+							value = this.getNestedValue(entry, key);
 						} else {
-							break outerloop;
+							value = entry[key];
+						}
+
+						if (value !== null && value !== undefined) {
+							url = url.replace(placeholder, value);
+						} else if (key.includes('.')) {
+							// For nested references, replace them with empty string to allow URL generation
+							url = url.replace(placeholder, '');
+						} else {
+							// For direct field references, skip this entry entirely
+							hasInvalidPlaceholder = true;
+							break;
 						}
 					}
 
+					if (hasInvalidPlaceholder) {
+						continue;
+					}
+
+					// Clean up any double slashes that might result from empty replacements
+					url = url.replace(/\/+/g, '/');
 					url = baseURL + url;
 
 					const sitemapEntry = {
@@ -48,10 +128,15 @@ const service = ({strapi}: { strapi: Core.Strapi }) => ({
 						lastmod: undefined,
 						thumbnail: undefined,
 						thumbnailTitle: undefined,
+						populateLinkedModels: undefined,
 					};
 
 					if (lastModified === 'true') {
 						sitemapEntry.lastmod = entry.updatedAt;
+					}
+
+					if (populateLinkedModels == 'true') {
+						sitemapEntry.populateLinkedModels = true;
 					}
 
 					if (thumbnail !== '') {
@@ -205,6 +290,7 @@ const service = ({strapi}: { strapi: Core.Strapi }) => ({
 					frequency: data.frequency,
 					lastModified: data.lastModified,
 					thumbnail: data.thumbnail,
+					populateLinkedModels: data.populateLinkedModels,
 				},
 			});
 

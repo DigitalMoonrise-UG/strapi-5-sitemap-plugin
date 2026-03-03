@@ -36,6 +36,7 @@ export default function CollectionTypeModal({
 	const [lastModified, setLastModified] = useState('false');
 	const [thumbnail, setThumbnail] = useState('');
 	const [possibleThumbnailFields, setPossibleThumbnailFields] = useState<any[]>([]);
+	const [populateLinkedModels, setPopulateLinkedModels] = useState('false');
 
 	const [collectionTypes, setCollectionTypes] = useState<CollectionType[]>([]);
 	const [locales, setLocales] = useState<any[]>([]);
@@ -48,6 +49,7 @@ export default function CollectionTypeModal({
 	const frequencyRef = useRef<HTMLInputElement>(null);
 	const lastModifiedRef = useRef<HTMLInputElement>(null);
 	const thumbnailRef = useRef<HTMLInputElement>(null);
+	const populateLinkedModelsRef = useRef<HTMLInputElement>(null);
 
 	const { get, put, post } = getFetchClient();
 
@@ -92,6 +94,7 @@ export default function CollectionTypeModal({
 					lastModified,
 					thumbnail,
 					id: editID,
+					populateLinkedModels,
 				});
 			} else {
 				response = await post(`/${PLUGIN_ID}/admin`, {
@@ -102,6 +105,7 @@ export default function CollectionTypeModal({
 					lastModified,
 					frequency,
 					thumbnail,
+					populateLinkedModels,
 				});
 			}
 
@@ -117,6 +121,7 @@ export default function CollectionTypeModal({
 			setEditID('');
 			setTypeToEdit('');
 			setModalOpen(false);
+			setPopulateLinkedModels('false');
 		} catch (err) {
 			console.error(err);
 			alert('An unexpected error occurred.');
@@ -132,6 +137,7 @@ export default function CollectionTypeModal({
 			setFrequency(typeToEdit.frequency || '');
 			setLastModified(typeToEdit.lastModified || 'false');
 			setThumbnail(typeToEdit.thumbnail || '');
+			setPopulateLinkedModels(typeToEdit.populateLinkedModels || 'false');
 		} else {
 			setType('');
 			setLangcode('');
@@ -141,6 +147,7 @@ export default function CollectionTypeModal({
 			setLastModified('false');
 			setThumbnail('');
 			setEditID('');
+			setPopulateLinkedModels('false');
 		}
 	}, [typeToEdit]);
 
@@ -285,12 +292,36 @@ export default function CollectionTypeModal({
 								<Field.Hint />
 							</Field.Root>
 						</Grid.Item>
+						<Grid.Item>
+							<Field.Root
+								width="100%"
+								hint={
+									"Enable population of linked models to include related data in the URL. " +
+									"Note that this may significantly increase the time required to generate the sitemap."
+								}
+							>
+								<Field.Label>Populate linked models</Field.Label>
+								<SingleSelect
+									name="populateLinkedModels"
+									required
+									onChange={handleSelectChange(setPopulateLinkedModels)}
+									ref={populateLinkedModelsRef}
+									value={populateLinkedModels}
+									placeholder="Select True or False"
+									disabled={type === ''}
+								>
+									<SingleSelectOption value="false">False</SingleSelectOption>
+									<SingleSelectOption value="true">True</SingleSelectOption>
+								</SingleSelect>
+								<Field.Hint />
+							</Field.Root>
+						</Grid.Item>
 					</Grid.Root>
 				</Modal.Body>
 				<Modal.Footer>
 					<Modal.Close>
 						<Button variant="tertiary" onClick={() => {
-							setTypeToEdit('');
+							setTypeToEdit("");
 							setModalOpen(false)
 						}}>Cancel</Button>
 					</Modal.Close>

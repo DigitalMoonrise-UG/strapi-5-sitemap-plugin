@@ -38,6 +38,9 @@
 		},
 		"thumbnail": {
 			"type": "string"
+		},
+		"populateLinkedModels": {
+			"type": "string"
 		}
 	}
 }
