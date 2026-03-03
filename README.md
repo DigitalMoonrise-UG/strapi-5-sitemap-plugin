@@ -43,7 +43,8 @@ npm install strapi-5-sitemap-plugin
 3. Select **Public**
 4. Search for **Strapi-5-sitemap-plugin**
 5. Select **getSitemap**
-6. Save your changes.
+6. Select **getSitemaoByslug**
+7. Save your changes.
 
 ---
 
