@@ -24,6 +24,14 @@
 		"excludedUrls": {
 			"type": "json",
 			"default": []
+		},
+		"useSitemapIndex": {
+			"type": "boolean",
+			"default": false
+		},
+		"sitemapDefinitions": {
+			"type": "json",
+			"default": []
 		}
 	}
 }

@@ -1,12 +1,20 @@
 import type {Core} from '@strapi/strapi';
 
 const controller = ({strapi}: { strapi: Core.Strapi }) => ({
-	getSitemap: async (ctx)=> {
+	getSitemap: async (ctx) => {
 		const sitemap = await strapi
 			.plugin('strapi-5-sitemap-plugin')
 			.service('service')
 			.getSitemap();
-
+		ctx.set('Content-Type', 'application/xml');
+		ctx.body = sitemap;
+	},
+	getSitemapBySlug: async (ctx) => {
+		const slug = ctx.params.slug;
+		const sitemap = await strapi
+			.plugin('strapi-5-sitemap-plugin')
+			.service('service')
+			.getSitemap(slug);
 		ctx.set('Content-Type', 'application/xml');
 		ctx.body = sitemap;
 	},
@@ -57,7 +65,8 @@ const controller = ({strapi}: { strapi: Core.Strapi }) => ({
 			.getAllowedFields(ctx.query.type);
 	},
 	adminPutOptions: async (ctx) => {
-		const requestData = ctx.request.body;
+		const body = ctx.request.body as Record<string, unknown>;
+		const requestData = body?.data !== undefined ? body.data : body;
 
 		ctx.body = strapi
 			.plugin('strapi-5-sitemap-plugin')

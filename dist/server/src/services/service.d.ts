@@ -2,7 +2,21 @@ import type { Core } from '@strapi/strapi';
 declare const service: ({ strapi }: {
     strapi: Core.Strapi;
 }) => {
-    getSitemap(): Promise<string>;
+    getNestedValue<T>(obj: Record<string, T | Record<string, any>>, path: string): T;
+    parseTableReferences(pattern: string): Record<string, any>;
+    getSitemap(slug?: string): Promise<string>;
+    generateSitemapIndexXml(baseURL: string, definitions: Array<{
+        name: string;
+    }>): string;
+    generateUrlsetXml(sitemap: Array<{
+        url: string;
+        priority: number;
+        frequency: string;
+        lastmod?: string;
+        thumbnail?: string;
+        thumbnailTitle?: string;
+    }>): string;
+    buildAndReturnSitemapXml(baseURL: string, excludedUrls: string[], sitemapEntries: any[], customURLs: any[]): Promise<string>;
     saveAdminData(data: any): Promise<{
         message: string;
         savedData: any;
@@ -33,8 +47,11 @@ declare const service: ({ strapi }: {
     }>;
     getOptions(): Promise<{
         baseUrl: any;
+        excludedUrls: any[];
+        useSitemapIndex: boolean;
+        sitemapDefinitions: any[];
     }>;
-    updateOptions(data: any): Promise<{
+    updateOptions(data: Record<string, unknown>): Promise<{
         message: string;
         savedData: any;
     }>;

@@ -4,8 +4,9 @@ import {Grid} from '@strapi/design-system';
 import {Pencil, Plus, Trash} from "@strapi/icons";
 import CollectionTypeModal from "../components/CollectionTypeModal";
 import {PLUGIN_ID} from "../pluginId";
-import { Modal } from '@strapi/design-system';
+import { Modal, Checkbox } from '@strapi/design-system';
 import CustomURLModal from "../components/CustomURLModal";
+import SitemapDefinitionModal, { SitemapDefinition } from "../components/SitemapDefinitionModal";
 import { getFetchClient } from '@strapi/strapi/admin';
 
 const Settings = () => {
@@ -27,6 +28,10 @@ const Settings = () => {
 
 	const [baseURL, setBaseURL] = useState('');
 	const [excludedUrlsText, setExcludedUrlsText] = useState('');
+	const [useSitemapIndex, setUseSitemapIndex] = useState(false);
+	const [sitemapDefinitions, setSitemapDefinitions] = useState<SitemapDefinition[]>([]);
+	const [sitemapModalOpen, setSitemapModalOpen] = useState(false);
+	const [sitemapEditIndex, setSitemapEditIndex] = useState<number | null>(null);
 
 	const { get, put, del } = getFetchClient();
 
@@ -43,13 +48,16 @@ const Settings = () => {
 
 		fetchData();
 
-		const fetchBaseUrl = async () => {
+		const fetchOptions = async () => {
 			const { data } = await get(`/${PLUGIN_ID}/admin-get-options`);
-			if (data.baseUrl) {
-				setBaseURL(data.baseUrl);
+			if (data.baseUrl) setBaseURL(data.baseUrl);
+			if (Array.isArray(data.excludedUrls) && data.excludedUrls.length > 0) {
+				setExcludedUrlsText(data.excludedUrls.join('\n'));
 			}
+			setUseSitemapIndex(Boolean(data.useSitemapIndex));
+			setSitemapDefinitions(Array.isArray(data.sitemapDefinitions) ? data.sitemapDefinitions : []);
 		};
-		fetchBaseUrl();
+		fetchOptions();
 
 		const fetchCustomURLs = async () => {
 			const { data } = await get(`/${PLUGIN_ID}/admin-custom-urls`);
@@ -147,11 +155,35 @@ const Settings = () => {
 			await put(`/${PLUGIN_ID}/admin-put-options`, {
 				baseURL: baseURL,
 				excludedUrls,
+				useSitemapIndex,
+				sitemapDefinitions,
 			});
 		} catch (err) {
 			console.error(JSON.stringify(err));
 			alert('An unexpected error occurred.');
 		}
+	};
+
+	const getCollectionTypeLabel = (id: number) => {
+		const ct = collectionTypes.find((c: any) => c.id === id);
+		return ct ? `${ct.type} (${ct.langcode})` : String(id);
+	};
+
+	const handleSitemapDefinitionSubmit = (data: SitemapDefinition) => {
+		if (sitemapEditIndex !== null) {
+			setSitemapDefinitions((prev) => {
+				const next = [...prev];
+				next[sitemapEditIndex] = data;
+				return next;
+			});
+			setSitemapEditIndex(null);
+		} else {
+			setSitemapDefinitions((prev) => [...prev, data]);
+		}
+	};
+
+	const handleDeleteSitemapDef = (index: number) => {
+		setSitemapDefinitions((prev) => prev.filter((_, i) => i !== index));
 	};
 
 	return (
@@ -191,6 +223,61 @@ const Settings = () => {
 					</Field.Root>
 					<Button variant="default" marginRight={2} onClick={saveOptions}>Save</Button>
 				</Flex>
+				<Box marginTop={8}>
+					<Box marginBottom={4}>
+						<Typography variant="beta" as="h2">Sitemap Settings</Typography>
+					</Box>
+					<Box marginBottom={2}>
+					<Checkbox
+						checked={useSitemapIndex}
+						onCheckedChange={(checked: boolean | 'indeterminate') => setUseSitemapIndex(checked === true)}
+					>
+						Use sitemap index with multiple sitemaps
+					</Checkbox>
+					</Box>
+					<Typography variant="epsilon" as="p" textColor="neutral600" marginTop={1}>
+						When enabled, sitemap.xml becomes the index; each entry below generates sitemap-{"{name}"}.xml.
+					</Typography>
+					<Box marginTop={3} padding={3} style={{ borderRadius: 4, border: '1px solid #eaeaef' } as React.CSSProperties}>
+						<Typography variant="epsilon" as="p" textColor="neutral600">
+							For public access to individual sitemaps (sitemap-{"{name}"}.xml), enable the permission:
+						</Typography>
+						<Typography variant="epsilon" as="p" textColor="neutral700" marginTop={1}>
+							<code style={{ fontFamily: 'monospace', fontSize: '13px', padding: '2px 6px', borderRadius: 4 }}>getSitemapBySlug</code>
+							{' '}in Users & Permissions → Public → Strapi-5-sitemap-plugin
+						</Typography>
+					</Box>
+				</Box>
+				{useSitemapIndex && (
+					<Box marginTop={4}>
+						<Table colCount={4} rowCount={4} footer={<TFooter icon={<Plus />} onClick={() => { setSitemapEditIndex(null); setSitemapModalOpen(true); }}>Add sitemap</TFooter>}>
+							<Thead>
+								<Tr>
+									<Th><Typography variant="sigma">Name</Typography></Th>
+									<Th><Typography variant="sigma">Collection Types</Typography></Th>
+									<Th><Typography variant="sigma">Custom URLs</Typography></Th>
+									<Th><VisuallyHidden>Actions</VisuallyHidden></Th>
+								</Tr>
+							</Thead>
+							<Tbody>
+								{sitemapDefinitions.map((def, index) => (
+									<Tr key={index}>
+										<Td><Typography variant="sigma">sitemap-{def.name}.xml</Typography></Td>
+										<Td><Typography variant="sigma">{(def.collectionTypeConfigIds || []).map(getCollectionTypeLabel).join(', ') || '—'}</Typography></Td>
+										<Td><Typography variant="sigma">{def.includeCustomUrls ? 'Yes' : 'No'}</Typography></Td>
+										<Td>
+											<Flex gap={1}>
+												<IconButton onClick={() => { setSitemapEditIndex(index); setSitemapModalOpen(true); }} label="Edit"><Pencil /></IconButton>
+												<IconButton onClick={() => handleDeleteSitemapDef(index)} label="Delete"><Trash /></IconButton>
+											</Flex>
+										</Td>
+									</Tr>
+								))}
+							</Tbody>
+						</Table>
+					</Box>
+				)}
+				<Button variant="default" marginTop={3} onClick={saveOptions}>Save</Button>
 			</Box>
 			<Box paddingLeft={10} paddingRight={10} paddingBottom={10}>
 				<Box marginBottom={4}>
@@ -320,9 +407,11 @@ const Settings = () => {
 			</Box>
 			<Box paddingLeft={10} paddingRight={10} paddingBottom={10}>
 				<Box marginBottom={4}>
+					<Box marginBottom={2}>
 					<Typography variant="beta" as="h2">
 						Excluded URLs
 					</Typography>
+					</Box>
 					<Typography variant="epsilon" as="p" textColor="neutral600">
 						URL paths to exclude from the sitemap (one per line). E.g. /index if you use Custom URL for / and want to avoid duplicate or 404 entries.
 					</Typography>
@@ -333,8 +422,8 @@ const Settings = () => {
 						value={excludedUrlsText}
 						onChange={(e) => setExcludedUrlsText(e.target.value)}
 						placeholder="/index"
-						rows={4}
-						style={{ width: '100%', padding: '8px', font: 'inherit', borderRadius: '4px', border: '1px solid #dcdce4' }}
+						rows={6}
+						style={{ width: '100%', padding: '8px', fontSize: '16px', lineHeight: 1.5, borderRadius: '4px', border: '1px solid #dcdce4' }}
 					/>
 					<Field.Hint />
 				</Field.Root>
@@ -343,6 +432,15 @@ const Settings = () => {
 
 			{modalOpen && <CollectionTypeModal isOpen={modalOpen} setModalOpen={setModalOpen} setNewCollectionTypeAdded={setNewCollectionTypeAdded} typeToEdit={typeToEdit} setTypeToEdit={setTypeToEdit} editID={editID} setEditID={setEditID} />}
 			{customURLsModalOpen && <CustomURLModal isOpen={customURLsModalOpen} setModalOpen={setCustomURLsModalOpen} setNewCustomURLAdded={setNewCustomURLAdded} typeToEdit={typeToEdit} setTypeToEdit={setTypeToEdit} editID={editID} setEditID={setEditID} />}
+			{sitemapModalOpen && (
+				<SitemapDefinitionModal
+					isOpen={sitemapModalOpen}
+					onClose={() => { setSitemapModalOpen(false); setSitemapEditIndex(null); }}
+					onSubmit={handleSitemapDefinitionSubmit}
+					collectionTypes={collectionTypes}
+					initialData={sitemapEditIndex !== null ? sitemapDefinitions[sitemapEditIndex] ?? null : null}
+				/>
+			)}
 
 			{deleteModalOpen && (
 				<Modal.Root open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>

@@ -20,6 +20,7 @@ declare const _default: {
             strapi: import("@strapi/types/dist/core").Strapi;
         }) => {
             getSitemap: (ctx: any) => Promise<void>;
+            getSitemapBySlug: (ctx: any) => Promise<void>;
             adminGET: (ctx: any) => Promise<void>;
             adminPOST(ctx: any): void;
             adminPUT(ctx: any): void;
@@ -63,7 +64,21 @@ declare const _default: {
         service: ({ strapi }: {
             strapi: import("@strapi/types/dist/core").Strapi;
         }) => {
-            getSitemap(): Promise<string>;
+            getNestedValue<T>(obj: Record<string, T | Record<string, any>>, path: string): T;
+            parseTableReferences(pattern: string): Record<string, any>;
+            getSitemap(slug?: string): Promise<string>;
+            generateSitemapIndexXml(baseURL: string, definitions: {
+                name: string;
+            }[]): string;
+            generateUrlsetXml(sitemap: {
+                url: string;
+                priority: number;
+                frequency: string;
+                lastmod?: string;
+                thumbnail?: string;
+                thumbnailTitle?: string;
+            }[]): string;
+            buildAndReturnSitemapXml(baseURL: string, excludedUrls: string[], sitemapEntries: any[], customURLs: any[]): Promise<string>;
             saveAdminData(data: any): Promise<{
                 message: string;
                 savedData: any;
@@ -94,8 +109,11 @@ declare const _default: {
             }>;
             getOptions(): Promise<{
                 baseUrl: any;
+                excludedUrls: any[];
+                useSitemapIndex: boolean;
+                sitemapDefinitions: any[];
             }>;
-            updateOptions(data: any): Promise<{
+            updateOptions(data: Record<string, unknown>): Promise<{
                 message: string;
                 savedData: any;
             }>;

@@ -7,4 +7,12 @@ export default [
 			policies: [],
 		},
 	},
+	{
+		method: "GET",
+		path: "/sitemap-:slug.xml",
+		handler: "controller.getSitemapBySlug",
+		config: {
+			policies: [],
+		},
+	},
 ];

@@ -65,26 +65,27 @@ describe('Sitemap service', () => {
 						};
 					case 'plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-option':
 						return {
-							findFirst: vi.fn().mockReturnValue({ baseUrl: 'https://example.com/', excludedUrls: [] }),
+							findFirst: vi.fn().mockReturnValue({ baseUrl: 'https://example.com/', excludedUrls: [], useSitemapIndex: false, sitemapDefinitions: [] }),
 						};
 				}
 			}),
 			db: {
 				query: vi.fn().mockImplementation((type: string) => {
 					switch (type) {
+						case 'plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-content-type':
+							return {
+								findMany: vi.fn().mockReturnValue([
+									{ id: 1, pattern: 'test/[url]', type: 'test', langcode: '-', priority: 0.5, frequency: 'daily', lastModified: 'false', thumbnail: '', populateLinkedModels: 'false' },
+									{ id: 2, pattern: 'test2/[url]/[other]', type: 'test2', langcode: '-', priority: 0.5, frequency: 'daily', lastModified: 'false', thumbnail: '', populateLinkedModels: 'false' },
+									{ id: 3, pattern: 'test3/[nested.url]/[url]', type: 'test3', langcode: '-', priority: 0.1, frequency: 'daily', lastModified: 'false', thumbnail: '', populateLinkedModels: 'false' },
+									{ id: 4, pattern: 'test4/[nested.url]/[url]', type: 'test4', langcode: '-', priority: 0.1, frequency: 'daily', lastModified: 'false', thumbnail: '', populateLinkedModels: 'false' },
+								]),
+							};
 						case 'plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-content-type-single-url':
 							return {
 								findMany: vi.fn().mockReturnValue([
-									{
-										slug: 'custom1',
-										priority: 1,
-										frequency: 'daily',
-									},
-									{
-										slug: 'custom2',
-										priority: 2,
-										frequency: 'monthly',
-									},
+									{ slug: 'custom1', priority: 1, frequency: 'daily' },
+									{ slug: 'custom2', priority: 2, frequency: 'monthly' },
 								]),
 							};
 					}

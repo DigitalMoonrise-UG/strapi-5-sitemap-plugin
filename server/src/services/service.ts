@@ -40,13 +40,62 @@ const service = ({strapi}: { strapi: Core.Strapi }) => ({
 
 		return Object.keys(populate).length > 0 ? { populate } : {};
 	},
-	async getSitemap() {
-		const sitemapEntries = await strapi.documents('plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-content-type').findMany();
-		const customURLs = await strapi.db.query('plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-content-type-single-url').findMany();
+	async getSitemap(slug?: string) {
 		const baseURLObject = await strapi.documents('plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-option').findFirst();
-		const baseURL = baseURLObject.baseUrl;
+		if (!baseURLObject) return this.generateUrlsetXml([]);
+		const baseURL = baseURLObject.baseUrl || '';
 		const excludedUrls: string[] = Array.isArray(baseURLObject.excludedUrls) ? baseURLObject.excludedUrls : [];
+		const useSitemapIndex = Boolean(baseURLObject.useSitemapIndex);
+		const sitemapDefinitions: Array<{ name: string; collectionTypeConfigIds: number[]; includeCustomUrls: boolean }> =
+			Array.isArray(baseURLObject.sitemapDefinitions) ? baseURLObject.sitemapDefinitions : [];
 
+		const allSitemapEntries = await strapi.db.query('plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-content-type').findMany();
+		const allCustomURLs = await strapi.db.query('plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-content-type-single-url').findMany();
+
+		if (useSitemapIndex && sitemapDefinitions.length > 0) {
+			if (slug === undefined) {
+				return this.generateSitemapIndexXml(baseURL, sitemapDefinitions);
+			}
+			const def = sitemapDefinitions.find((d: { name: string }) => (d.name || '').trim() === String(slug).trim());
+			if (!def) return this.generateUrlsetXml([]);
+			const configIds = Array.isArray(def.collectionTypeConfigIds) ? def.collectionTypeConfigIds : [];
+			const sitemapEntries = allSitemapEntries.filter((e: { id: number }) => configIds.includes(e.id));
+			const customURLs = def.includeCustomUrls ? allCustomURLs : [];
+			return this.buildAndReturnSitemapXml(baseURL, excludedUrls, sitemapEntries, customURLs);
+		}
+
+		return this.buildAndReturnSitemapXml(baseURL, excludedUrls, allSitemapEntries, allCustomURLs);
+	},
+	generateSitemapIndexXml(baseURL: string, definitions: Array<{ name: string }>) {
+		const base = baseURL.replace(/\/$/, '');
+		const prefix = '/api/strapi-5-sitemap-plugin';
+		const sitemaps = definitions
+			.filter((d) => (d.name || '').trim() !== '')
+			.map((d) => `<sitemap><loc>${base}${prefix}/sitemap-${encodeURIComponent(String(d.name).trim())}.xml</loc></sitemap>`)
+			.join('');
+		return `<?xml version="1.0" encoding="UTF-8"?><sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${sitemaps}</sitemapindex>`;
+	},
+	generateUrlsetXml(sitemap: Array<{ url: string; priority: number; frequency: string; lastmod?: string; thumbnail?: string; thumbnailTitle?: string }>) {
+		const urlSet = sitemap
+			.map(
+				(entry) => `
+					        <url>
+					            <loc>${entry.url}</loc>
+					            <priority>${entry.priority}</priority>
+					            <changefreq>${entry.frequency}</changefreq>
+					            ${entry.lastmod ? `<lastmod>${entry.lastmod}</lastmod>` : ''}
+					            ${entry.thumbnail ? `<image:image><image:loc>${entry.thumbnail}</image:loc><image:title>${entry.thumbnailTitle || ''}</image:title></image:image>` : ''}
+					        </url>`
+			)
+			.join('');
+		return `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">${urlSet}</urlset>`;
+	},
+	async buildAndReturnSitemapXml(
+		baseURL: string,
+		excludedUrls: string[],
+		sitemapEntries: any[],
+		customURLs: any[]
+	) {
 		try {
 			const collections = [];
 			const sitemap = [];
@@ -161,36 +210,25 @@ const service = ({strapi}: { strapi: Core.Strapi }) => ({
 
 			sitemap.push(...customSitemapEntries);
 
-			// Filter out excluded URL paths (e.g. /index when using Custom URL for /)
+			// Filter out excluded URL paths
 			const normalizedExcluded = excludedUrls
 				.map((path) => String(path).trim())
 				.filter(Boolean)
 				.map((p) => (p.startsWith('/') ? p : `/${p}`).replace(/\/$/, '') || '/');
+			const getPathFromUrl = (url: string): string => {
+				try {
+					const pathname = new URL(url).pathname;
+					return pathname.replace(/\/$/, '') || '/';
+				} catch {
+					return '/';
+				}
+			};
 			const filteredSitemap = sitemap.filter((entry) => {
-				let path = entry.url.replace(baseURL, '').trim();
-				if (!path.startsWith('/')) path = `/${path}`;
-				path = path.replace(/\/$/, '') || '/';
-				const isExcluded = normalizedExcluded.some((ex) => path === ex);
-				return !isExcluded;
+				const path = getPathFromUrl(entry.url);
+				return !normalizedExcluded.some((ex) => path === ex);
 			});
 
-			const generateXML = (sitemap) => {
-				const urlSet = sitemap
-					.map(
-						(entry) => `
-					        <url>
-					            <loc>${entry.url}</loc>
-					            <priority>${entry.priority}</priority>
-					            <changefreq>${entry.frequency}</changefreq>
-					            ${entry.lastmod ? `<lastmod>${entry.lastmod}</lastmod>` : ''}
-					            ${entry.thumbnail ? `<image:image><image:loc>${entry.thumbnail}</image:loc><image:title>${entry.thumbnailTitle}</image:title></image:image>` : ''}
-					        </url>`
-					).join('');
-
-				return `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">${urlSet}</urlset>`;
-			};
-
-			return generateXML(filteredSitemap);
+			return this.generateUrlsetXml(filteredSitemap);
 		} catch (error) {
 			strapi.log.error('Error fetching entries:', error);
 			throw new Error('Failed to fetch entries for types');
@@ -339,43 +377,52 @@ const service = ({strapi}: { strapi: Core.Strapi }) => ({
 			const results = await strapi.documents('plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-option').findFirst();
 			if (results) {
 				const excludedUrls = Array.isArray(results.excludedUrls) ? results.excludedUrls : [];
-				return { baseUrl: results.baseUrl, excludedUrls };
+				const useSitemapIndex = Boolean(results.useSitemapIndex);
+				const sitemapDefinitions = Array.isArray(results.sitemapDefinitions) ? results.sitemapDefinitions : [];
+				return { baseUrl: results.baseUrl, excludedUrls, useSitemapIndex, sitemapDefinitions };
 			} else {
-				return { baseUrl: '', excludedUrls: [] };
+				return { baseUrl: '', excludedUrls: [], useSitemapIndex: false, sitemapDefinitions: [] };
 			}
 		} catch (error) {
 			strapi.log.error('Error fetching locales:', error);
 			throw new Error('Failed to fetch locales');
 		}
 	},
-	async updateOptions(data) {
+	async updateOptions(data: Record<string, unknown>) {
 		try {
 			const results = await strapi.documents('plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-option').findFirst();
-			let response = null;
-
 			const excludedUrls = Array.isArray(data.excludedUrls) ? data.excludedUrls : [];
+			const useSitemapIndex = Boolean(data.useSitemapIndex);
+			const sitemapDefinitions = Array.isArray(data.sitemapDefinitions) ? data.sitemapDefinitions : [];
+			const updateData = {
+				baseUrl: data.baseURL != null ? String(data.baseURL) : '',
+				excludedUrls,
+				useSitemapIndex,
+				sitemapDefinitions,
+			};
+			let response;
 			if (results) {
-				response = await strapi.documents('plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-option').update({
-					documentId: results.documentId,
-					data: {
-						// @ts-ignore
-						baseUrl: data.baseURL,
-						excludedUrls,
-					},
-				});
+				// Use db.query().update() so JSON/boolean fields persist (Query Engine uses id)
+				const rows = await strapi.db.query('plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-option').findMany({ limit: 1 });
+				const row = rows[0];
+				if (row && row.id != null) {
+					response = await strapi.db.query('plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-option').update({
+						where: { id: row.id },
+						data: updateData as Record<string, unknown>,
+					});
+				} else {
+					response = await strapi.documents('plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-option').update({
+						documentId: results.documentId,
+						// @ts-expect-error schema includes useSitemapIndex, sitemapDefinitions
+						data: updateData,
+					});
+				}
 			} else {
 				response = await strapi.db.query('plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-option').create({
-					data: {
-						baseUrl: data.baseURL,
-						excludedUrls,
-					},
+					data: updateData as Record<string, unknown>,
 				});
 			}
-
-			return {
-				message: 'Data saved successfully',
-				savedData: response,
-			};
+			return { message: 'Data saved successfully', savedData: response };
 		} catch (error) {
 			strapi.log.error('Error saving data:', error);
 			throw new Error('Failed to save data');

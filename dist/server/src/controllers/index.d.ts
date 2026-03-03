@@ -3,6 +3,7 @@ declare const _default: {
         strapi: import("@strapi/types/dist/core").Strapi;
     }) => {
         getSitemap: (ctx: any) => Promise<void>;
+        getSitemapBySlug: (ctx: any) => Promise<void>;
         adminGET: (ctx: any) => Promise<void>;
         adminPOST(ctx: any): void;
         adminPUT(ctx: any): void;
