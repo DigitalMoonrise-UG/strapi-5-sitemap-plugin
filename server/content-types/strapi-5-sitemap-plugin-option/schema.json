@@ -20,6 +20,10 @@
 	"attributes": {
 		"baseUrl": {
 			"type": "string"
+		},
+		"excludedUrls": {
+			"type": "json",
+			"default": []
 		}
 	}
 }

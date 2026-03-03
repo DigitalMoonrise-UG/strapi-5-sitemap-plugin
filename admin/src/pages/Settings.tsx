@@ -26,6 +26,7 @@ const Settings = () => {
 	const [entryToDeleteType, setEntryToDeleteType] = useState('');
 
 	const [baseURL, setBaseURL] = useState('');
+	const [excludedUrlsText, setExcludedUrlsText] = useState('');
 
 	const { get, put, del } = getFetchClient();
 
@@ -137,10 +138,15 @@ const Settings = () => {
 		setValue(event.target.value);
 	};
 
-	const saveBaseURL = async () => {
+	const saveOptions = async () => {
 		try {
+			const excludedUrls = excludedUrlsText
+				.split('\n')
+				.map((line) => line.trim())
+				.filter(Boolean);
 			await put(`/${PLUGIN_ID}/admin-put-options`, {
 				baseURL: baseURL,
+				excludedUrls,
 			});
 		} catch (err) {
 			console.error(JSON.stringify(err));
@@ -183,9 +189,7 @@ const Settings = () => {
 						<Field.Input value={baseURL} onChange={handleInputChange(setBaseURL)}/>
 						<Field.Hint />
 					</Field.Root>
-					<Button variant="default" marginRight={2} onClick={() => {
-						saveBaseURL();
-					}}>Save</Button>
+					<Button variant="default" marginRight={2} onClick={saveOptions}>Save</Button>
 				</Flex>
 			</Box>
 			<Box paddingLeft={10} paddingRight={10} paddingBottom={10}>
@@ -313,6 +317,28 @@ const Settings = () => {
 						))}
 					</Tbody>
 				</Table>
+			</Box>
+			<Box paddingLeft={10} paddingRight={10} paddingBottom={10}>
+				<Box marginBottom={4}>
+					<Typography variant="beta" as="h2">
+						Excluded URLs
+					</Typography>
+					<Typography variant="epsilon" as="p" textColor="neutral600">
+						URL paths to exclude from the sitemap (one per line). E.g. /index if you use Custom URL for / and want to avoid duplicate or 404 entries.
+					</Typography>
+				</Box>
+				<Field.Root name="excludedUrls" width="100%" hint="One path per line, e.g. /index">
+					<Field.Label>Excluded paths</Field.Label>
+					<textarea
+						value={excludedUrlsText}
+						onChange={(e) => setExcludedUrlsText(e.target.value)}
+						placeholder="/index"
+						rows={4}
+						style={{ width: '100%', padding: '8px', font: 'inherit', borderRadius: '4px', border: '1px solid #dcdce4' }}
+					/>
+					<Field.Hint />
+				</Field.Root>
+				<Button variant="default" marginTop={2} onClick={saveOptions}>Save options</Button>
 			</Box>
 
 			{modalOpen && <CollectionTypeModal isOpen={modalOpen} setModalOpen={setModalOpen} setNewCollectionTypeAdded={setNewCollectionTypeAdded} typeToEdit={typeToEdit} setTypeToEdit={setTypeToEdit} editID={editID} setEditID={setEditID} />}

@@ -65,7 +65,7 @@ describe('Sitemap service', () => {
 						};
 					case 'plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-option':
 						return {
-							findFirst: vi.fn().mockReturnValue({ baseUrl: 'https://example.com/' }),
+							findFirst: vi.fn().mockReturnValue({ baseUrl: 'https://example.com/', excludedUrls: [] }),
 						};
 				}
 			}),
@@ -154,5 +154,25 @@ describe('Sitemap service', () => {
       </urlset>
       `);
 		expect(normalized).toBe(expected);
+	});
+	test('should exclude URLs listed in excludedUrls', async function () {
+		const defaultDocuments = strapi.documents;
+		strapi.documents = vi.fn().mockImplementation((type: string) => {
+			if (type === 'plugin::strapi-5-sitemap-plugin.strapi-5-sitemap-plugin-option') {
+				return {
+					findFirst: vi.fn().mockReturnValue({
+						baseUrl: 'https://example.com/',
+						excludedUrls: ['/test/123', '/custom2'],
+					}),
+				};
+			}
+			return defaultDocuments(type);
+		});
+		const sitemap = await service({ strapi }).getSitemap();
+		const normalized = normalizeXml(sitemap);
+		expect(normalized).not.toContain('https://example.com/test/123');
+		expect(normalized).not.toContain('https://example.com/custom2');
+		expect(normalized).toContain('https://example.com/test2/456/other');
+		expect(normalized).toContain('https://example.com/custom1');
 	});
 });
