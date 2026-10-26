@@ -8,8 +8,12 @@ import { Modal, Checkbox } from '@strapi/design-system';
 import CustomURLModal from "../components/CustomURLModal";
 import SitemapDefinitionModal, { SitemapDefinition } from "../components/SitemapDefinitionModal";
 import { getFetchClient } from '@strapi/strapi/admin';
+import { useIntl } from 'react-intl';
+import { getTrad } from '../utils/getTrad';
 
 const Settings = () => {
+	const { formatMessage } = useIntl();
+	const t = (id: string, values?: Record<string, string>) => formatMessage({ id: getTrad(id) }, values);
 	const [collectionTypes, setCollectionTypes] = useState<any[]>([]);
 	const [customURLs, setCustomURLs] = useState<any[]>([]);
 
@@ -42,7 +46,7 @@ const Settings = () => {
 				setCollectionTypes(data.results);
 			} catch (err) {
 				console.error(err);
-				alert('An unexpected error occurred');
+				alert(t('error.unexpected'));
 			}
 		};
 
@@ -138,7 +142,7 @@ const Settings = () => {
 			setEntryToDeleteType('');
 		} catch (err) {
 			console.error(err);
-			alert('An unexpected error occurred.');
+			alert(t('error.unexpected'));
 		}
 	};
 
@@ -160,7 +164,7 @@ const Settings = () => {
 			});
 		} catch (err) {
 			console.error(JSON.stringify(err));
-			alert('An unexpected error occurred.');
+			alert(t('error.unexpected'));
 		}
 	};
 
@@ -193,18 +197,18 @@ const Settings = () => {
 					<Grid.Item col={6}>
 						<Box width="100%">
 							<Typography variant="alpha" as="h1">
-								Sitemap
+								{t('plugin.name')}
 							</Typography>
 							<Box color="neutral400">
 								<Typography variant="epsilon" as="p">
-									Settings for the sitemap XML
+									{t('page.subtitle')}
 								</Typography>
 							</Box>
 						</Box>
 					</Grid.Item>
 					<Grid.Item col={6}>
 						<Box textAlign="right" width="100%">
-							<LinkButton variant="default" marginRight={2} isExternal href={"/api/strapi-5-sitemap-plugin/sitemap.xml"}>Show Sitemap</LinkButton>
+							<LinkButton variant="default" marginRight={2} isExternal href={"/api/strapi-5-sitemap-plugin/sitemap.xml"}>{t('page.showSitemap')}</LinkButton>
 						</Box>
 					</Grid.Item>
 				</Grid.Root>
@@ -212,51 +216,51 @@ const Settings = () => {
 			<Box paddingLeft={10} paddingRight={10} paddingBottom={10}>
 				<Box marginBottom={4}>
 					<Typography variant="beta" as="h2">
-						Base URL
+						{t('baseUrl.title')}
 					</Typography>
 				</Box>
 				<Flex gap={2}>
-					<Field.Root name="baseURL" required width='100%' hint={`What is your base URL? (e. g. https://www.example.com)`}>
-						<Field.Label>Base URL</Field.Label>
+					<Field.Root name="baseURL" required width='100%' hint={t('baseUrl.hint')}>
+						<Field.Label>{t('baseUrl.label')}</Field.Label>
 						<Field.Input value={baseURL} onChange={handleInputChange(setBaseURL)}/>
 						<Field.Hint />
 					</Field.Root>
-					<Button variant="default" marginRight={2} onClick={saveOptions}>Save</Button>
+					<Button variant="default" marginRight={2} onClick={saveOptions}>{t('common.save')}</Button>
 				</Flex>
 				<Box marginTop={8}>
 					<Box marginBottom={4}>
-						<Typography variant="beta" as="h2">Sitemap Settings</Typography>
+						<Typography variant="beta" as="h2">{t('sitemapSettings.title')}</Typography>
 					</Box>
 					<Box marginBottom={2}>
 					<Checkbox
 						checked={useSitemapIndex}
 						onCheckedChange={(checked: boolean | 'indeterminate') => setUseSitemapIndex(checked === true)}
 					>
-						Use sitemap index with multiple sitemaps
+						{t('sitemapSettings.useIndex')}
 					</Checkbox>
 					</Box>
 					<Typography variant="epsilon" as="p" textColor="neutral600" marginTop={1}>
-						When enabled, sitemap.xml becomes the index; each entry below generates sitemap-{"{name}"}.xml.
+						{t('sitemapSettings.indexHint', { file: 'sitemap-{name}.xml' })}
 					</Typography>
 					<Box marginTop={3} padding={3} style={{ borderRadius: 4, border: '1px solid #eaeaef' } as React.CSSProperties}>
 						<Typography variant="epsilon" as="p" textColor="neutral600">
-							For public access to individual sitemaps (sitemap-{"{name}"}.xml), enable the permission:
+							{t('sitemapSettings.permissionHint', { file: 'sitemap-{name}.xml' })}
 						</Typography>
 						<Typography variant="epsilon" as="p" textColor="neutral700" marginTop={1}>
 							<code style={{ fontFamily: 'monospace', fontSize: '13px', padding: '2px 6px', borderRadius: 4 }}>getSitemapBySlug</code>
-							{' '}in Users & Permissions → Public → Strapi-5-sitemap-plugin
+							{' '}{t('sitemapSettings.permissionLocation')}
 						</Typography>
 					</Box>
 				</Box>
 				{useSitemapIndex && (
 					<Box marginTop={4}>
-						<Table colCount={4} rowCount={4} footer={<TFooter icon={<Plus />} onClick={() => { setSitemapEditIndex(null); setSitemapModalOpen(true); }}>Add sitemap</TFooter>}>
+						<Table colCount={4} rowCount={4} footer={<TFooter icon={<Plus />} onClick={() => { setSitemapEditIndex(null); setSitemapModalOpen(true); }}>{t('sitemapSettings.addSitemap')}</TFooter>}>
 							<Thead>
 								<Tr>
-									<Th><Typography variant="sigma">Name</Typography></Th>
-									<Th><Typography variant="sigma">Collection Types</Typography></Th>
-									<Th><Typography variant="sigma">Custom URLs</Typography></Th>
-									<Th><VisuallyHidden>Actions</VisuallyHidden></Th>
+									<Th><Typography variant="sigma">{t('sitemapSettings.name')}</Typography></Th>
+									<Th><Typography variant="sigma">{t('sitemapSettings.collectionTypes')}</Typography></Th>
+									<Th><Typography variant="sigma">{t('sitemapSettings.customUrls')}</Typography></Th>
+									<Th><VisuallyHidden>{t('common.actions')}</VisuallyHidden></Th>
 								</Tr>
 							</Thead>
 							<Tbody>
@@ -264,11 +268,11 @@ const Settings = () => {
 									<Tr key={index}>
 										<Td><Typography variant="sigma">sitemap-{def.name}.xml</Typography></Td>
 										<Td><Typography variant="sigma">{(def.collectionTypeConfigIds || []).map(getCollectionTypeLabel).join(', ') || '—'}</Typography></Td>
-										<Td><Typography variant="sigma">{def.includeCustomUrls ? 'Yes' : 'No'}</Typography></Td>
+										<Td><Typography variant="sigma">{def.includeCustomUrls ? t('common.yes') : t('common.no')}</Typography></Td>
 										<Td>
 											<Flex gap={1}>
-												<IconButton onClick={() => { setSitemapEditIndex(index); setSitemapModalOpen(true); }} label="Edit"><Pencil /></IconButton>
-												<IconButton onClick={() => handleDeleteSitemapDef(index)} label="Delete"><Trash /></IconButton>
+												<IconButton onClick={() => { setSitemapEditIndex(index); setSitemapModalOpen(true); }} label={t('common.edit')}><Pencil /></IconButton>
+												<IconButton onClick={() => handleDeleteSitemapDef(index)} label={t('common.delete')}><Trash /></IconButton>
 											</Flex>
 										</Td>
 									</Tr>
@@ -277,40 +281,40 @@ const Settings = () => {
 						</Table>
 					</Box>
 				)}
-				<Button variant="default" marginTop={3} onClick={saveOptions}>Save</Button>
+				<Button variant="default" marginTop={3} onClick={saveOptions}>{t('common.save')}</Button>
 			</Box>
 			<Box paddingLeft={10} paddingRight={10} paddingBottom={10}>
 				<Box marginBottom={4}>
 					<Typography variant="beta" as="h2">
-						Collection Types
+						{t('collectionTypes.title')}
 					</Typography>
 				</Box>
-				<Table colCount={10} rowCount={6} footer={<TFooter icon={<Plus />} onClick={() => setModalOpen(true)}>Add another field to this collection type</TFooter>}>
+				<Table colCount={10} rowCount={6} footer={<TFooter icon={<Plus />} onClick={() => setModalOpen(true)}>{t('collectionTypes.addField')}</TFooter>}>
 					<Thead>
 						<Tr>
 							<Th>
-								<Typography variant="sigma">Type</Typography>
+								<Typography variant="sigma">{t('collectionTypes.type')}</Typography>
 							</Th>
 							<Th>
-								<Typography variant="sigma">Lang Code</Typography>
+								<Typography variant="sigma">{t('collectionTypes.langcode')}</Typography>
 							</Th>
 							<Th>
-								<Typography variant="sigma">Pattern</Typography>
+								<Typography variant="sigma">{t('collectionTypes.pattern')}</Typography>
 							</Th>
 							<Th>
-								<Typography variant="sigma">Priority</Typography>
+								<Typography variant="sigma">{t('collectionTypes.priority')}</Typography>
 							</Th>
 							<Th>
-								<Typography variant="sigma">Change Frequency</Typography>
+								<Typography variant="sigma">{t('collectionTypes.frequency')}</Typography>
 							</Th>
 							<Th>
-								<Typography variant="sigma">Add last modification date</Typography>
+								<Typography variant="sigma">{t('collectionTypes.lastModified')}</Typography>
 							</Th>
 							<Th>
-								<Typography variant="sigma">Thumbnail</Typography>
+								<Typography variant="sigma">{t('collectionTypes.thumbnail')}</Typography>
 							</Th>
 							<Th>
-								<VisuallyHidden>Actions</VisuallyHidden>
+								<VisuallyHidden>{t('common.actions')}</VisuallyHidden>
 							</Th>
 						</Tr>
 					</Thead>
@@ -342,10 +346,10 @@ const Settings = () => {
 							</Td>
 								<Td>
 									<Flex gap={1}>
-									<IconButton onClick={() => handleEdit(collectionType, 'collectionType')} label="Edit">
+									<IconButton onClick={() => handleEdit(collectionType, 'collectionType')} label={t('common.edit')}>
 											<Pencil />
 										</IconButton>
-									<IconButton onClick={() => handleDelete(collectionType, 'collectionType')} label="Delete">
+									<IconButton onClick={() => handleDelete(collectionType, 'collectionType')} label={t('common.delete')}>
 											<Trash />
 										</IconButton>
 									</Flex>
@@ -358,23 +362,23 @@ const Settings = () => {
 			<Box paddingLeft={10} paddingRight={10} paddingBottom={10}>
 				<Box marginBottom={4}>
 					<Typography variant="beta" as="h2">
-						Custom URLs
+						{t('customUrls.title')}
 					</Typography>
 				</Box>
-				<Table colCount={10} rowCount={6} footer={<TFooter icon={<Plus />} onClick={() => setCustomURLsModalOpen(true)}>Add another custom URL</TFooter>}>
+				<Table colCount={10} rowCount={6} footer={<TFooter icon={<Plus />} onClick={() => setCustomURLsModalOpen(true)}>{t('customUrls.add')}</TFooter>}>
 					<Thead>
 						<Tr>
 							<Th>
-								<Typography variant="sigma">Slug</Typography>
+								<Typography variant="sigma">{t('customUrls.slug')}</Typography>
 							</Th>
 							<Th>
-								<Typography variant="sigma">Priority</Typography>
+								<Typography variant="sigma">{t('collectionTypes.priority')}</Typography>
 							</Th>
 							<Th>
-								<Typography variant="sigma">Change Frequency</Typography>
+								<Typography variant="sigma">{t('collectionTypes.frequency')}</Typography>
 							</Th>
 							<Th>
-								<VisuallyHidden>Actions</VisuallyHidden>
+								<VisuallyHidden>{t('common.actions')}</VisuallyHidden>
 							</Th>
 						</Tr>
 					</Thead>
@@ -392,10 +396,10 @@ const Settings = () => {
 								</Td>
 								<Td>
 									<Flex gap={1}>
-										<IconButton onClick={() => handleEdit(customURL, 'customURL')} label="Edit">
+										<IconButton onClick={() => handleEdit(customURL, 'customURL')} label={t('common.edit')}>
 											<Pencil />
 										</IconButton>
-									<IconButton onClick={() => handleDelete(customURL, 'customURL')} label="Delete">
+									<IconButton onClick={() => handleDelete(customURL, 'customURL')} label={t('common.delete')}>
 											<Trash />
 										</IconButton>
 									</Flex>
@@ -409,15 +413,15 @@ const Settings = () => {
 				<Box marginBottom={4}>
 					<Box marginBottom={2}>
 					<Typography variant="beta" as="h2">
-						Excluded URLs
+						{t('excludedUrls.title')}
 					</Typography>
 					</Box>
 					<Typography variant="epsilon" as="p" textColor="neutral600">
-						URL paths to exclude from the sitemap (one per line). E.g. /index if you use Custom URL for / and want to avoid duplicate or 404 entries.
+						{t('excludedUrls.description')}
 					</Typography>
 				</Box>
-				<Field.Root name="excludedUrls" width="100%" hint="One path per line, e.g. /index">
-					<Field.Label>Excluded paths</Field.Label>
+				<Field.Root name="excludedUrls" width="100%" hint={t('excludedUrls.hint')}>
+					<Field.Label>{t('excludedUrls.label')}</Field.Label>
 					<textarea
 						value={excludedUrlsText}
 						onChange={(e) => setExcludedUrlsText(e.target.value)}
@@ -427,7 +431,7 @@ const Settings = () => {
 					/>
 					<Field.Hint />
 				</Field.Root>
-				<Button variant="default" marginTop={2} onClick={saveOptions}>Save options</Button>
+				<Button variant="default" marginTop={2} onClick={saveOptions}>{t('common.saveOptions')}</Button>
 			</Box>
 
 			{modalOpen && <CollectionTypeModal isOpen={modalOpen} setModalOpen={setModalOpen} setNewCollectionTypeAdded={setNewCollectionTypeAdded} typeToEdit={typeToEdit} setTypeToEdit={setTypeToEdit} editID={editID} setEditID={setEditID} />}
@@ -446,10 +450,10 @@ const Settings = () => {
 				<Modal.Root open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
 					<Modal.Content>
 						<Modal.Header>
-							<Modal.Title>Confirm Delete</Modal.Title>
+							<Modal.Title>{t('delete.title')}</Modal.Title>
 						</Modal.Header>
 						<Modal.Body>
-							<Typography>Are you sure you want to delete this entry?</Typography>
+							<Typography>{t('delete.confirm')}</Typography>
 						</Modal.Body>
 						<Modal.Footer>
 							<Button variant="tertiary" onClick={() => {
@@ -457,8 +461,8 @@ const Settings = () => {
 								setEntryToDelete(null);
 								setEntryToDeleteType('');
 							}}>
-								Cancel</Button>
-							<Button variant="danger" onClick={confirmDelete}>Delete</Button>
+								{t('common.cancel')}</Button>
+							<Button variant="danger" onClick={confirmDelete}>{t('common.delete')}</Button>
 						</Modal.Footer>
 					</Modal.Content>
 				</Modal.Root>

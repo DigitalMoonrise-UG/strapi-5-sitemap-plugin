@@ -5,6 +5,8 @@ import { Modal } from "@strapi/design-system";
 import React, {useEffect, useRef, useState} from "react";
 import {PLUGIN_ID} from "../pluginId";
 import { getFetchClient } from '@strapi/strapi/admin';
+import { useIntl } from 'react-intl';
+import { getTrad } from '../utils/getTrad';
 interface CollectionType {
 	uid: string;
 	singularName: string;
@@ -28,6 +30,8 @@ export default function CollectionTypeModal({
 	editID: string;
 	setEditID: React.Dispatch<React.SetStateAction<string>>;
 }) {
+	const { formatMessage } = useIntl();
+	const t = (id: string, values?: Record<string, string>) => formatMessage({ id: getTrad(id) }, values);
 	const [type, setType] = useState('');
 	const [langcode, setLangcode] = useState('');
 	const [pattern, setPattern] = useState('');
@@ -124,7 +128,7 @@ export default function CollectionTypeModal({
 			setPopulateLinkedModels('false');
 		} catch (err) {
 			console.error(err);
-			alert('An unexpected error occurred.');
+			alert(t('error.unexpected'));
 		}
 	};
 
@@ -157,7 +161,7 @@ export default function CollectionTypeModal({
 				const { data } = await get(`/${PLUGIN_ID}/admin-get-content-types`);
 				setCollectionTypes(data.collectionTypes);
 			} catch (error) {
-				alert('Error while loading!');
+				alert(t('error.loading'));
 			}
 		};
 
@@ -166,7 +170,7 @@ export default function CollectionTypeModal({
 				const { data } = await get(`/${PLUGIN_ID}/admin-get-locales`);
 				setLocales(data);
 			} catch (error) {
-				alert('Error while loading!');
+				alert(t('error.loading'));
 			}
 		};
 
@@ -180,7 +184,7 @@ export default function CollectionTypeModal({
 				const { data } = await get(`/${PLUGIN_ID}/admin-allowed-fields?type=${type}`);
 				setPossibleThumbnailFields(data.allowedFields);
 
-				setPatternHint('Possible fields: ' + data.allowedFields.map((field: string) => `[${field}]`).join(', '));
+				setPatternHint(data.allowedFields.map((field: string) => `[${field}]`).join(', '));
 				if (pattern === '') {
 					setPattern('/' + data.slug + '/');
 				}
@@ -202,15 +206,15 @@ export default function CollectionTypeModal({
 			<Modal.Content>
 				<Modal.Header>
 					<Modal.Title>
-						{typeToEdit ? 'Edit Collection Type' : 'Add Collection Type'}
+						{typeToEdit ? t('collectionTypeModal.edit') : t('collectionTypeModal.add')}
 					</Modal.Title>
 				</Modal.Header>
 				<Modal.Body>
 					<Grid.Root gap={4} col={1}>
 						<Grid.Item>
-							<Field.Root width='100%' hint="Select a collection type">
-								<Field.Label>Type</Field.Label>
-								<SingleSelect name="type" required onChange={handleSelectChange(setType)} ref={typeRef} value={type} placeholder="Select Type" disabled={typeToEdit}>
+							<Field.Root width='100%' hint={t('collectionTypeModal.typeHint')}>
+								<Field.Label>{t('collectionTypes.type')}</Field.Label>
+								<SingleSelect name="type" required onChange={handleSelectChange(setType)} ref={typeRef} value={type} placeholder={t('collectionTypeModal.typePlaceholder')} disabled={typeToEdit}>
 									{collectionTypes.map((collectionType: CollectionType) => (
 										<SingleSelectOption key={collectionType.uid} value={collectionType.singularName}>{collectionType.displayName}</SingleSelectOption>
 									))}
@@ -219,10 +223,10 @@ export default function CollectionTypeModal({
 							</Field.Root>
 						</Grid.Item>
 						<Grid.Item>
-							<Field.Root required width='100%' hint="Select a language or leave empty for the default language">
-								<Field.Label>Lang Code</Field.Label>
-								<SingleSelect name="langcode" onChange={handleSelectChange(setLangcode)} ref={langcodeRef} value={langcode} placeholder="Select Langcode" disabled={type === ''}>
-									<SingleSelectOption value="-">Default Language</SingleSelectOption>
+							<Field.Root required width='100%' hint={t('collectionTypeModal.langcodeHint')}>
+								<Field.Label>{t('collectionTypes.langcode')}</Field.Label>
+								<SingleSelect name="langcode" onChange={handleSelectChange(setLangcode)} ref={langcodeRef} value={langcode} placeholder={t('collectionTypeModal.langcodePlaceholder')} disabled={type === ''}>
+									<SingleSelectOption value="-">{t('common.defaultLanguage')}</SingleSelectOption>
 									{locales.map((locale) => (
 										<SingleSelectOption key={locale.id} value={locale.code}>{locale.code}</SingleSelectOption>
 									))}
@@ -231,16 +235,16 @@ export default function CollectionTypeModal({
 							</Field.Root>
 						</Grid.Item>
 						<Grid.Item>
-							<Field.Root name="pattern" required width='100%' hint={`How do your links look like? ${patternHint}`}>
-								<Field.Label>Pattern</Field.Label>
+							<Field.Root name="pattern" required width='100%' hint={t('collectionTypeModal.patternHint') + (patternHint ? ' ' + t('collectionTypeModal.possibleFields', { fields: patternHint }) : '')}>
+								<Field.Label>{t('collectionTypes.pattern')}</Field.Label>
 								<Field.Input value={pattern} onChange={handleInputChange(setPattern)} ref={patternRef} disabled={type === ''}/>
 								<Field.Hint />
 							</Field.Root>
 						</Grid.Item>
 						<Grid.Item>
-							<Field.Root width='100%' hint="The priority of your pages">
-								<Field.Label>Priority</Field.Label>
-								<SingleSelect name="priority" required onChange={handleSelectChange(setPriority)} ref={priorityRef} value={priority} placeholder="Select Priority" disabled={type === ''}>
+							<Field.Root width='100%' hint={t('priority.hint')}>
+								<Field.Label>{t('priority.label')}</Field.Label>
+								<SingleSelect name="priority" required onChange={handleSelectChange(setPriority)} ref={priorityRef} value={priority} placeholder={t('priority.placeholder')} disabled={type === ''}>
 									<SingleSelectOption value="0.1">0.1</SingleSelectOption>
 									<SingleSelectOption value="0.2">0.2</SingleSelectOption>
 									<SingleSelectOption value="0.3">0.3</SingleSelectOption>
@@ -256,35 +260,35 @@ export default function CollectionTypeModal({
 							</Field.Root>
 						</Grid.Item>
 						<Grid.Item>
-							<Field.Root width='100%' hint="The changefrequency of your pages">
-								<Field.Label>Change Frequency</Field.Label>
-								<SingleSelect name="frequency" required onChange={handleSelectChange(setFrequency)} ref={frequencyRef} value={frequency} placeholder="Select Frequency" disabled={type === ''}>
-									<SingleSelectOption value="always">Always</SingleSelectOption>
-									<SingleSelectOption value="hourly">Hourly</SingleSelectOption>
-									<SingleSelectOption value="daily">Daily</SingleSelectOption>
-									<SingleSelectOption value="weekly">Weekly</SingleSelectOption>
-									<SingleSelectOption value="monthly">Monthly</SingleSelectOption>
-									<SingleSelectOption value="yearly">Yearly</SingleSelectOption>
-									<SingleSelectOption value="never">Never</SingleSelectOption>
+							<Field.Root width='100%' hint={t('frequency.hint')}>
+								<Field.Label>{t('frequency.label')}</Field.Label>
+								<SingleSelect name="frequency" required onChange={handleSelectChange(setFrequency)} ref={frequencyRef} value={frequency} placeholder={t('frequency.placeholder')} disabled={type === ''}>
+									<SingleSelectOption value="always">{t('frequency.always')}</SingleSelectOption>
+									<SingleSelectOption value="hourly">{t('frequency.hourly')}</SingleSelectOption>
+									<SingleSelectOption value="daily">{t('frequency.daily')}</SingleSelectOption>
+									<SingleSelectOption value="weekly">{t('frequency.weekly')}</SingleSelectOption>
+									<SingleSelectOption value="monthly">{t('frequency.monthly')}</SingleSelectOption>
+									<SingleSelectOption value="yearly">{t('frequency.yearly')}</SingleSelectOption>
+									<SingleSelectOption value="never">{t('frequency.never')}</SingleSelectOption>
 								</SingleSelect>
 								<Field.Hint />
 							</Field.Root>
 						</Grid.Item>
 						<Grid.Item>
-							<Field.Root width='100%' hint="Add last modification date">
-								<Field.Label>Last Modified</Field.Label>
-								<SingleSelect name="lastModified" required onChange={handleSelectChange(setLastModified)} ref={lastModifiedRef} value={lastModified} placeholder="Select True or False" disabled={type === ''}>
-									<SingleSelectOption value="false">False</SingleSelectOption>
-									<SingleSelectOption value="true">True</SingleSelectOption>
+							<Field.Root width='100%' hint={t('collectionTypeModal.lastModifiedHint')}>
+								<Field.Label>{t('collectionTypeModal.lastModifiedLabel')}</Field.Label>
+								<SingleSelect name="lastModified" required onChange={handleSelectChange(setLastModified)} ref={lastModifiedRef} value={lastModified} placeholder={t('collectionTypeModal.boolPlaceholder')} disabled={type === ''}>
+									<SingleSelectOption value="false">{t('common.false')}</SingleSelectOption>
+									<SingleSelectOption value="true">{t('common.true')}</SingleSelectOption>
 								</SingleSelect>
 								<Field.Hint />
 							</Field.Root>
 						</Grid.Item>
 						<Grid.Item>
-							<Field.Root width='100%' hint="Optional thumbnail image">
-								<Field.Label>Thumbnail</Field.Label>
-								<SingleSelect name="thumbnail" onChange={handleSelectChange(setThumbnail)} ref={thumbnailRef} value={thumbnail} placeholder="Select Thumbnail" disabled={type === ''}>
-									<SingleSelectOption value="-">None</SingleSelectOption>
+							<Field.Root width='100%' hint={t('collectionTypeModal.thumbnailHint')}>
+								<Field.Label>{t('collectionTypes.thumbnail')}</Field.Label>
+								<SingleSelect name="thumbnail" onChange={handleSelectChange(setThumbnail)} ref={thumbnailRef} value={thumbnail} placeholder={t('collectionTypeModal.thumbnailPlaceholder')} disabled={type === ''}>
+									<SingleSelectOption value="-">{t('common.none')}</SingleSelectOption>
 									{possibleThumbnailFields.map((field) => (
 											<SingleSelectOption key={field} value={field}>{field}</SingleSelectOption>
 									))}
@@ -295,23 +299,20 @@ export default function CollectionTypeModal({
 						<Grid.Item>
 							<Field.Root
 								width="100%"
-								hint={
-									"Enable population of linked models to include related data in the URL. " +
-									"Note that this may significantly increase the time required to generate the sitemap."
-								}
+								hint={t('collectionTypeModal.populateHint')}
 							>
-								<Field.Label>Populate linked models</Field.Label>
+								<Field.Label>{t('collectionTypeModal.populateLabel')}</Field.Label>
 								<SingleSelect
 									name="populateLinkedModels"
 									required
 									onChange={handleSelectChange(setPopulateLinkedModels)}
 									ref={populateLinkedModelsRef}
 									value={populateLinkedModels}
-									placeholder="Select True or False"
+									placeholder={t('collectionTypeModal.boolPlaceholder')}
 									disabled={type === ''}
 								>
-									<SingleSelectOption value="false">False</SingleSelectOption>
-									<SingleSelectOption value="true">True</SingleSelectOption>
+									<SingleSelectOption value="false">{t('common.false')}</SingleSelectOption>
+									<SingleSelectOption value="true">{t('common.true')}</SingleSelectOption>
 								</SingleSelect>
 								<Field.Hint />
 							</Field.Root>
@@ -323,9 +324,9 @@ export default function CollectionTypeModal({
 						<Button variant="tertiary" onClick={() => {
 							setTypeToEdit("");
 							setModalOpen(false)
-						}}>Cancel</Button>
+						}}>{t('common.cancel')}</Button>
 					</Modal.Close>
-					<Button onClick={handleSubmit}>Confirm</Button>
+					<Button onClick={handleSubmit}>{t('common.confirm')}</Button>
 				</Modal.Footer>
 			</Modal.Content>
 		</Modal.Root>

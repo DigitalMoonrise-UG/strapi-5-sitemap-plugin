@@ -5,6 +5,8 @@ import { Modal } from "@strapi/design-system";
 import React, {useEffect, useRef, useState} from "react";
 import { PLUGIN_ID } from '../pluginId';
 import { getFetchClient } from '@strapi/strapi/admin';
+import { useIntl } from 'react-intl';
+import { getTrad } from '../utils/getTrad';
 export default function CustomURLModal({
 	isOpen,
 	setModalOpen,
@@ -22,6 +24,8 @@ export default function CustomURLModal({
 	editID: string;
 	setEditID: React.Dispatch<React.SetStateAction<string>>;
 }) {
+	const { formatMessage } = useIntl();
+	const t = (id: string, values?: Record<string, string>) => formatMessage({ id: getTrad(id) }, values);
 	const [slug, setSlug] = useState('');
 	const [priority, setPriority] = useState('');
 	const [frequency, setFrequency] = useState('');
@@ -80,7 +84,7 @@ export default function CustomURLModal({
 			setModalOpen(false);
 		} catch (err) {
 			console.error(err);
-			alert('An unexpected error occurred.');
+			alert(t('error.unexpected'));
 		}
 	};
 
@@ -110,22 +114,22 @@ export default function CustomURLModal({
 			<Modal.Content>
 				<Modal.Header>
 					<Modal.Title>
-						{typeToEdit ? 'Edit Custom URL' : 'Add Custom URL'}
+						{typeToEdit ? t('customUrlModal.edit') : t('customUrlModal.add')}
 					</Modal.Title>
 				</Modal.Header>
 				<Modal.Body>
 					<Grid.Root gap={4} col={1}>
 						<Grid.Item>
-							<Field.Root width='100%' hint="The slug of your custom URL">
-								<Field.Label>Slug</Field.Label>
+							<Field.Root width='100%' hint={t('customUrlModal.slugHint')}>
+								<Field.Label>{t('customUrls.slug')}</Field.Label>
 								<Field.Input value={slug} onChange={handleInputChange(setSlug)} ref={slugRef} />
 								<Field.Hint />
 							</Field.Root>
 						</Grid.Item>
 						<Grid.Item>
-							<Field.Root width='100%' hint="The priority of your pages">
-								<Field.Label>Priority</Field.Label>
-								<SingleSelect name="priority" required onChange={handleSelectChange(setPriority)} ref={priorityRef} value={priority} placeholder="Select Priority">
+							<Field.Root width='100%' hint={t('priority.hint')}>
+								<Field.Label>{t('priority.label')}</Field.Label>
+								<SingleSelect name="priority" required onChange={handleSelectChange(setPriority)} ref={priorityRef} value={priority} placeholder={t('priority.placeholder')}>
 									<SingleSelectOption value="0.1">0.1</SingleSelectOption>
 									<SingleSelectOption value="0.2">0.2</SingleSelectOption>
 									<SingleSelectOption value="0.3">0.3</SingleSelectOption>
@@ -141,16 +145,16 @@ export default function CustomURLModal({
 							</Field.Root>
 						</Grid.Item>
 						<Grid.Item>
-							<Field.Root width='100%' hint="The changefrequency of your pages">
-								<Field.Label>Change Frequency</Field.Label>
-								<SingleSelect name="frequency" required onChange={handleSelectChange(setFrequency)} ref={frequencyRef} value={frequency} placeholder="Select Frequency">
-									<SingleSelectOption value="always">Always</SingleSelectOption>
-									<SingleSelectOption value="hourly">Hourly</SingleSelectOption>
-									<SingleSelectOption value="daily">Daily</SingleSelectOption>
-									<SingleSelectOption value="weekly">Weekly</SingleSelectOption>
-									<SingleSelectOption value="monthly">Monthly</SingleSelectOption>
-									<SingleSelectOption value="yearly">Yearly</SingleSelectOption>
-									<SingleSelectOption value="never">Never</SingleSelectOption>
+							<Field.Root width='100%' hint={t('frequency.hint')}>
+								<Field.Label>{t('frequency.label')}</Field.Label>
+								<SingleSelect name="frequency" required onChange={handleSelectChange(setFrequency)} ref={frequencyRef} value={frequency} placeholder={t('frequency.placeholder')}>
+									<SingleSelectOption value="always">{t('frequency.always')}</SingleSelectOption>
+									<SingleSelectOption value="hourly">{t('frequency.hourly')}</SingleSelectOption>
+									<SingleSelectOption value="daily">{t('frequency.daily')}</SingleSelectOption>
+									<SingleSelectOption value="weekly">{t('frequency.weekly')}</SingleSelectOption>
+									<SingleSelectOption value="monthly">{t('frequency.monthly')}</SingleSelectOption>
+									<SingleSelectOption value="yearly">{t('frequency.yearly')}</SingleSelectOption>
+									<SingleSelectOption value="never">{t('frequency.never')}</SingleSelectOption>
 								</SingleSelect>
 								<Field.Hint />
 							</Field.Root>
@@ -162,9 +166,9 @@ export default function CustomURLModal({
 						<Button variant="tertiary" onClick={() => {
 							setTypeToEdit('');
 							setModalOpen(false)
-						}}>Cancel</Button>
+						}}>{t('common.cancel')}</Button>
 					</Modal.Close>
-					<Button onClick={handleSubmit}>Confirm</Button>
+					<Button onClick={handleSubmit}>{t('common.confirm')}</Button>
 				</Modal.Footer>
 			</Modal.Content>
 		</Modal.Root>
