@@ -101,7 +101,11 @@ const service = ({strapi}: { strapi: Core.Strapi }) => ({
 			const sitemap = [];
 
 			for (const sitemapEntry of sitemapEntries) {
-				const isValidThumbnail = sitemapEntry.thumbnail && sitemapEntry.thumbnail !== '-';
+				const contentTypeUid = `api::${sitemapEntry.type}.${sitemapEntry.type}`;
+				const isValidThumbnail =
+					sitemapEntry.thumbnail &&
+					sitemapEntry.thumbnail !== '-' &&
+					strapi.contentTypes[contentTypeUid]?.attributes?.[sitemapEntry.thumbnail]?.type === 'media';
 				let populate = isValidThumbnail ? { [sitemapEntry.thumbnail]: true } : undefined;
 
 				if (sitemapEntry.populateLinkedModels === 'true') {
@@ -115,14 +119,18 @@ const service = ({strapi}: { strapi: Core.Strapi }) => ({
 				}
 
 				const entries = await strapi
-					.documents(`api::${sitemapEntry.type}.${sitemapEntry.type}`)
+					.documents(contentTypeUid)
 					.findMany({
 						locale: sitemapEntry.langcode === '-' ? undefined : sitemapEntry.langcode,
 						status: 'published',
 						populate,
 					});
 
-				collections.push({ ...sitemapEntry, entries });
+				collections.push({
+					...sitemapEntry,
+					thumbnail: isValidThumbnail ? sitemapEntry.thumbnail : '',
+					entries,
+				});
 			}
 
 			collections.forEach((collection) => {
@@ -296,8 +304,13 @@ const service = ({strapi}: { strapi: Core.Strapi }) => ({
 		);
 
 		const fields = [];
+		const mediaFields = [];
 
 		Object.entries(contentType.attributes).forEach(([fieldName, field] : [fieldName: string, field: any]) => {
+			if (field.type === 'media') {
+				mediaFields.push(fieldName);
+			}
+
 			if (
 				!systemFields.includes(fieldName) &&
 				field.type !== 'relation' &&
@@ -327,6 +340,7 @@ const service = ({strapi}: { strapi: Core.Strapi }) => ({
 
 		return {
 			allowedFields: fields,
+			mediaFields,
 			slug: contentType.info.pluralName,
 		};
 	},
