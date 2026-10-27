@@ -23,27 +23,26 @@ const Initializer = ({ setPlugin }) => {
   }, []);
   return null;
 };
+const getTrad = (id) => `${PLUGIN_ID}.${id}`;
 const index = {
   register(app) {
     app.createSettingSection(
       {
         id: PLUGIN_ID,
         intlLabel: {
-          id: `${PLUGIN_ID}.plugin.name`,
+          id: getTrad("plugin.name"),
           defaultMessage: "Sitemap"
         }
       },
       [
         {
           intlLabel: {
-            id: "Configuration",
+            id: getTrad("settings.configuration"),
             defaultMessage: "Configuration"
           },
           id: "sitemap-settings",
-          to: `/settings/${PLUGIN_ID}`,
-          Component: async () => {
-            return import("./Settings-BnGedsRO.mjs");
-          },
+          to: PLUGIN_ID,
+          Component: () => import("./Settings-DINXwZpN.mjs"),
           permissions: [{ action: `plugin::${PLUGIN_ID}.settings.read`, subject: null }]
         }
       ]
@@ -59,7 +58,7 @@ const index = {
     return Promise.all(
       locales.map(async (locale) => {
         try {
-          const { default: data } = await __variableDynamicImportRuntimeHelper(/* @__PURE__ */ Object.assign({ "./translations/en.json": () => import("./en-Byx4XI2L.mjs") }), `./translations/${locale}.json`, 3);
+          const { default: data } = await __variableDynamicImportRuntimeHelper(/* @__PURE__ */ Object.assign({ "./translations/ar.json": () => import("./ar-C1nqXShX.mjs"), "./translations/en.json": () => import("./en-BhE2soD2.mjs"), "./translations/es.json": () => import("./es-DrRyegdz.mjs"), "./translations/tr.json": () => import("./tr-CkohvQ5p.mjs") }), `./translations/${locale}.json`, 3);
           return { data, locale };
         } catch {
           return { data: {}, locale };
@@ -70,5 +69,6 @@ const index = {
 };
 export {
   PLUGIN_ID as P,
+  getTrad as g,
   index as i
 };

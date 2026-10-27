@@ -1,5 +1,6 @@
 import { PLUGIN_ID } from './pluginId';
 import { Initializer } from './components/Initializer';
+import { getTrad } from './utils/getTrad';
 
 export default {
   register(app: any) {
@@ -7,21 +8,19 @@ export default {
       {
         id: PLUGIN_ID,
         intlLabel: {
-          id: `${PLUGIN_ID}.plugin.name`,
+          id: getTrad('plugin.name'),
           defaultMessage: 'Sitemap'
         }
       },
       [
         {
           intlLabel: {
-            id: 'Configuration',
+            id: getTrad('settings.configuration'),
             defaultMessage: 'Configuration'
           },
           id: 'sitemap-settings',
-          to: `/settings/${PLUGIN_ID}`,
-          Component: async () => {
-            return import('./pages/Settings');
-          },
+          to: PLUGIN_ID,
+          Component: () => import('./pages/Settings'),
           permissions: [{ action: `plugin::${PLUGIN_ID}.settings.read`, subject: null }],
         },
       ]

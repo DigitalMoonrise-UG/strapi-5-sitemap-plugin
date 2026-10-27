@@ -4,8 +4,9 @@ const jsxRuntime = require("react/jsx-runtime");
 const react = require("react");
 const designSystem = require("@strapi/design-system");
 const icons = require("@strapi/icons");
-const index = require("./index-DtB-73HV.js");
+const index = require("./index-DFtGYtSg.js");
 const admin = require("@strapi/strapi/admin");
+const reactIntl = require("react-intl");
 function CollectionTypeModal({
   isOpen,
   setModalOpen,
@@ -15,6 +16,8 @@ function CollectionTypeModal({
   editID = "",
   setEditID
 }) {
+  const { formatMessage } = reactIntl.useIntl();
+  const t = (id, values) => formatMessage({ id: index.getTrad(id) }, values);
   const [type, setType] = react.useState("");
   const [langcode, setLangcode] = react.useState("");
   const [pattern, setPattern] = react.useState("");
@@ -104,7 +107,7 @@ function CollectionTypeModal({
       setPopulateLinkedModels("false");
     } catch (err) {
       console.error(err);
-      alert("An unexpected error occurred.");
+      alert(t("error.unexpected"));
     }
   };
   react.useEffect(() => {
@@ -135,7 +138,7 @@ function CollectionTypeModal({
         const { data } = await get(`/${index.PLUGIN_ID}/admin-get-content-types`);
         setCollectionTypes(data.collectionTypes);
       } catch (error) {
-        alert("Error while loading!");
+        alert(t("error.loading"));
       }
     };
     const getLocales = async () => {
@@ -143,7 +146,7 @@ function CollectionTypeModal({
         const { data } = await get(`/${index.PLUGIN_ID}/admin-get-locales`);
         setLocales(data);
       } catch (error) {
-        alert("Error while loading!");
+        alert(t("error.loading"));
       }
     };
     getContentTypes();
@@ -153,8 +156,8 @@ function CollectionTypeModal({
     if (type) {
       const getAllowedFields = async () => {
         const { data } = await get(`/${index.PLUGIN_ID}/admin-allowed-fields?type=${type}`);
-        setPossibleThumbnailFields(data.allowedFields);
-        setPatternHint("Possible fields: " + data.allowedFields.map((field) => `[${field}]`).join(", "));
+        setPossibleThumbnailFields(data.mediaFields ?? []);
+        setPatternHint(data.allowedFields.map((field) => `[${field}]`).join(", "));
         if (pattern === "") {
           setPattern("/" + data.slug + "/");
         }
@@ -170,29 +173,29 @@ function CollectionTypeModal({
     }
   };
   return /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Root, { open: isOpen, onOpenChange: (e) => handleOnOpenChange(e), children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Modal.Content, { children: [
-    /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Header, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Title, { children: typeToEdit ? "Edit Collection Type" : "Add Collection Type" }) }),
+    /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Header, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Title, { children: typeToEdit ? t("collectionTypeModal.edit") : t("collectionTypeModal.add") }) }),
     /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Body, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Grid.Root, { gap: 4, col: 1, children: [
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { width: "100%", hint: "Select a collection type", children: [
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: "Type" }),
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelect, { name: "type", required: true, onChange: handleSelectChange(setType), ref: typeRef, value: type, placeholder: "Select Type", disabled: typeToEdit, children: collectionTypes.map((collectionType) => /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: collectionType.singularName, children: collectionType.displayName }, collectionType.uid)) }),
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { width: "100%", hint: t("collectionTypeModal.typeHint"), children: [
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: t("collectionTypes.type") }),
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelect, { name: "type", required: true, onChange: handleSelectChange(setType), ref: typeRef, value: type, placeholder: t("collectionTypeModal.typePlaceholder"), disabled: typeToEdit, children: collectionTypes.map((collectionType) => /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: collectionType.singularName, children: collectionType.displayName }, collectionType.uid)) }),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Hint, {})
       ] }) }),
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { required: true, width: "100%", hint: "Select a language or leave empty for the default language", children: [
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: "Lang Code" }),
-        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.SingleSelect, { name: "langcode", onChange: handleSelectChange(setLangcode), ref: langcodeRef, value: langcode, placeholder: "Select Langcode", disabled: type === "", children: [
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "-", children: "Default Language" }),
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { required: true, width: "100%", hint: t("collectionTypeModal.langcodeHint"), children: [
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: t("collectionTypes.langcode") }),
+        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.SingleSelect, { name: "langcode", onChange: handleSelectChange(setLangcode), ref: langcodeRef, value: langcode, placeholder: t("collectionTypeModal.langcodePlaceholder"), disabled: type === "", children: [
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "-", children: t("common.defaultLanguage") }),
           locales.map((locale) => /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: locale.code, children: locale.code }, locale.id))
         ] }),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Hint, {})
       ] }) }),
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { name: "pattern", required: true, width: "100%", hint: `How do your links look like? ${patternHint}`, children: [
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: "Pattern" }),
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { name: "pattern", required: true, width: "100%", hint: t("collectionTypeModal.patternHint") + (patternHint ? " " + t("collectionTypeModal.possibleFields", { fields: patternHint }) : ""), children: [
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: t("collectionTypes.pattern") }),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Input, { value: pattern, onChange: handleInputChange(setPattern), ref: patternRef, disabled: type === "" }),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Hint, {})
       ] }) }),
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { width: "100%", hint: "The priority of your pages", children: [
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: "Priority" }),
-        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.SingleSelect, { name: "priority", required: true, onChange: handleSelectChange(setPriority), ref: priorityRef, value: priority, placeholder: "Select Priority", disabled: type === "", children: [
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { width: "100%", hint: t("priority.hint"), children: [
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: t("priority.label") }),
+        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.SingleSelect, { name: "priority", required: true, onChange: handleSelectChange(setPriority), ref: priorityRef, value: priority, placeholder: t("priority.placeholder"), disabled: type === "", children: [
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "0.1", children: "0.1" }),
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "0.2", children: "0.2" }),
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "0.3", children: "0.3" }),
@@ -206,31 +209,31 @@ function CollectionTypeModal({
         ] }),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Hint, {})
       ] }) }),
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { width: "100%", hint: "The changefrequency of your pages", children: [
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: "Change Frequency" }),
-        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.SingleSelect, { name: "frequency", required: true, onChange: handleSelectChange(setFrequency), ref: frequencyRef, value: frequency, placeholder: "Select Frequency", disabled: type === "", children: [
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "always", children: "Always" }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "hourly", children: "Hourly" }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "daily", children: "Daily" }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "weekly", children: "Weekly" }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "monthly", children: "Monthly" }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "yearly", children: "Yearly" }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "never", children: "Never" })
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { width: "100%", hint: t("frequency.hint"), children: [
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: t("frequency.label") }),
+        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.SingleSelect, { name: "frequency", required: true, onChange: handleSelectChange(setFrequency), ref: frequencyRef, value: frequency, placeholder: t("frequency.placeholder"), disabled: type === "", children: [
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "always", children: t("frequency.always") }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "hourly", children: t("frequency.hourly") }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "daily", children: t("frequency.daily") }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "weekly", children: t("frequency.weekly") }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "monthly", children: t("frequency.monthly") }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "yearly", children: t("frequency.yearly") }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "never", children: t("frequency.never") })
         ] }),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Hint, {})
       ] }) }),
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { width: "100%", hint: "Add last modification date", children: [
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: "Last Modified" }),
-        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.SingleSelect, { name: "lastModified", required: true, onChange: handleSelectChange(setLastModified), ref: lastModifiedRef, value: lastModified, placeholder: "Select True or False", disabled: type === "", children: [
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "false", children: "False" }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "true", children: "True" })
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { width: "100%", hint: t("collectionTypeModal.lastModifiedHint"), children: [
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: t("collectionTypeModal.lastModifiedLabel") }),
+        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.SingleSelect, { name: "lastModified", required: true, onChange: handleSelectChange(setLastModified), ref: lastModifiedRef, value: lastModified, placeholder: t("collectionTypeModal.boolPlaceholder"), disabled: type === "", children: [
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "false", children: t("common.false") }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "true", children: t("common.true") })
         ] }),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Hint, {})
       ] }) }),
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { width: "100%", hint: "Optional thumbnail image", children: [
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: "Thumbnail" }),
-        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.SingleSelect, { name: "thumbnail", onChange: handleSelectChange(setThumbnail), ref: thumbnailRef, value: thumbnail, placeholder: "Select Thumbnail", disabled: type === "", children: [
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "-", children: "None" }),
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { width: "100%", hint: t("collectionTypeModal.thumbnailHint"), children: [
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: t("collectionTypes.thumbnail") }),
+        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.SingleSelect, { name: "thumbnail", onChange: handleSelectChange(setThumbnail), ref: thumbnailRef, value: thumbnail, placeholder: t("collectionTypeModal.thumbnailPlaceholder"), disabled: type === "", children: [
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "-", children: t("common.none") }),
           possibleThumbnailFields.map((field) => /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: field, children: field }, field))
         ] }),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Hint, {})
@@ -239,9 +242,9 @@ function CollectionTypeModal({
         designSystem.Field.Root,
         {
           width: "100%",
-          hint: "Enable population of linked models to include related data in the URL. Note that this may significantly increase the time required to generate the sitemap.",
+          hint: t("collectionTypeModal.populateHint"),
           children: [
-            /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: "Populate linked models" }),
+            /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: t("collectionTypeModal.populateLabel") }),
             /* @__PURE__ */ jsxRuntime.jsxs(
               designSystem.SingleSelect,
               {
@@ -250,11 +253,11 @@ function CollectionTypeModal({
                 onChange: handleSelectChange(setPopulateLinkedModels),
                 ref: populateLinkedModelsRef,
                 value: populateLinkedModels,
-                placeholder: "Select True or False",
+                placeholder: t("collectionTypeModal.boolPlaceholder"),
                 disabled: type === "",
                 children: [
-                  /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "false", children: "False" }),
-                  /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "true", children: "True" })
+                  /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "false", children: t("common.false") }),
+                  /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "true", children: t("common.true") })
                 ]
               }
             ),
@@ -267,8 +270,8 @@ function CollectionTypeModal({
       /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Close, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { variant: "tertiary", onClick: () => {
         setTypeToEdit("");
         setModalOpen(false);
-      }, children: "Cancel" }) }),
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { onClick: handleSubmit, children: "Confirm" })
+      }, children: t("common.cancel") }) }),
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { onClick: handleSubmit, children: t("common.confirm") })
     ] })
   ] }) });
 }
@@ -281,6 +284,8 @@ function CustomURLModal({
   editID = "",
   setEditID
 }) {
+  const { formatMessage } = reactIntl.useIntl();
+  const t = (id, values) => formatMessage({ id: index.getTrad(id) }, values);
   const [slug, setSlug] = react.useState("");
   const [priority, setPriority] = react.useState("");
   const [frequency, setFrequency] = react.useState("");
@@ -333,7 +338,7 @@ function CustomURLModal({
       setModalOpen(false);
     } catch (err) {
       console.error(err);
-      alert("An unexpected error occurred.");
+      alert(t("error.unexpected"));
     }
   };
   react.useEffect(() => {
@@ -356,16 +361,16 @@ function CustomURLModal({
     }
   };
   return /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Root, { open: isOpen, onOpenChange: (e) => handleOnOpenChange(e), children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Modal.Content, { children: [
-    /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Header, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Title, { children: typeToEdit ? "Edit Custom URL" : "Add Custom URL" }) }),
+    /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Header, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Title, { children: typeToEdit ? t("customUrlModal.edit") : t("customUrlModal.add") }) }),
     /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Body, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Grid.Root, { gap: 4, col: 1, children: [
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { width: "100%", hint: "The slug of your custom URL", children: [
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: "Slug" }),
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { width: "100%", hint: t("customUrlModal.slugHint"), children: [
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: t("customUrls.slug") }),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Input, { value: slug, onChange: handleInputChange(setSlug), ref: slugRef }),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Hint, {})
       ] }) }),
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { width: "100%", hint: "The priority of your pages", children: [
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: "Priority" }),
-        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.SingleSelect, { name: "priority", required: true, onChange: handleSelectChange(setPriority), ref: priorityRef, value: priority, placeholder: "Select Priority", children: [
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { width: "100%", hint: t("priority.hint"), children: [
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: t("priority.label") }),
+        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.SingleSelect, { name: "priority", required: true, onChange: handleSelectChange(setPriority), ref: priorityRef, value: priority, placeholder: t("priority.placeholder"), children: [
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "0.1", children: "0.1" }),
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "0.2", children: "0.2" }),
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "0.3", children: "0.3" }),
@@ -379,16 +384,16 @@ function CustomURLModal({
         ] }),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Hint, {})
       ] }) }),
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { width: "100%", hint: "The changefrequency of your pages", children: [
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: "Change Frequency" }),
-        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.SingleSelect, { name: "frequency", required: true, onChange: handleSelectChange(setFrequency), ref: frequencyRef, value: frequency, placeholder: "Select Frequency", children: [
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "always", children: "Always" }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "hourly", children: "Hourly" }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "daily", children: "Daily" }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "weekly", children: "Weekly" }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "monthly", children: "Monthly" }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "yearly", children: "Yearly" }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "never", children: "Never" })
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { width: "100%", hint: t("frequency.hint"), children: [
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: t("frequency.label") }),
+        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.SingleSelect, { name: "frequency", required: true, onChange: handleSelectChange(setFrequency), ref: frequencyRef, value: frequency, placeholder: t("frequency.placeholder"), children: [
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "always", children: t("frequency.always") }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "hourly", children: t("frequency.hourly") }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "daily", children: t("frequency.daily") }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "weekly", children: t("frequency.weekly") }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "monthly", children: t("frequency.monthly") }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "yearly", children: t("frequency.yearly") }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.SingleSelectOption, { value: "never", children: t("frequency.never") })
         ] }),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Hint, {})
       ] }) })
@@ -397,8 +402,8 @@ function CustomURLModal({
       /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Close, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { variant: "tertiary", onClick: () => {
         setTypeToEdit("");
         setModalOpen(false);
-      }, children: "Cancel" }) }),
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { onClick: handleSubmit, children: "Confirm" })
+      }, children: t("common.cancel") }) }),
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { onClick: handleSubmit, children: t("common.confirm") })
     ] })
   ] }) });
 }
@@ -409,6 +414,8 @@ function SitemapDefinitionModal({
   collectionTypes,
   initialData
 }) {
+  const { formatMessage } = reactIntl.useIntl();
+  const t = (id, values) => formatMessage({ id: index.getTrad(id) }, values);
   const [name, setName] = react.useState("");
   const [selectedIds, setSelectedIds] = react.useState([]);
   const [includeCustomUrls, setIncludeCustomUrls] = react.useState(false);
@@ -435,27 +442,23 @@ function SitemapDefinitionModal({
   };
   if (!isOpen) return null;
   return /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Root, { open: isOpen, onOpenChange: (open) => !open && onClose(), children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Modal.Content, { children: [
-    /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Header, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Title, { children: initialData ? "Edit sitemap" : "Add sitemap" }) }),
+    /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Header, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Title, { children: initialData ? t("sitemapModal.edit") : t("sitemapModal.add") }) }),
     /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Modal.Body, { children: [
       /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { name: "sitemapName", required: true, marginBottom: 4, children: [
-        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Label, { children: [
-          "Name (slug for sitemap-",
-          "{name}",
-          ".xml)"
-        ] }),
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: t("sitemapModal.nameLabel", { file: "sitemap-{name}.xml" }) }),
         /* @__PURE__ */ jsxRuntime.jsx(
           designSystem.Field.Input,
           {
             value: name,
             onChange: (e) => setName(e.target.value),
-            placeholder: "e.g. blog, pages"
+            placeholder: t("sitemapModal.namePlaceholder")
           }
         )
       ] }),
       /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { name: "collectionTypes", marginBottom: 4, children: [
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: "Collection Types (multiple selection)" }),
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Hint, { children: "Which configured collection types should appear in this sitemap?" }),
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { paddingTop: 2, style: { maxHeight: 200, overflow: "auto", border: "1px solid #dcdce4", borderRadius: 4, padding: 8 }, children: collectionTypes.length === 0 ? /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "epsilon", textColor: "neutral600", children: "First add collection types above." }) : /* @__PURE__ */ jsxRuntime.jsx(designSystem.Flex, { direction: "column", alignItems: "start", gap: 3, children: collectionTypes.map((ct) => /* @__PURE__ */ jsxRuntime.jsxs(
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: t("sitemapModal.collectionTypesLabel") }),
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Hint, { children: t("sitemapModal.collectionTypesHint") }),
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { paddingTop: 2, style: { maxHeight: 200, overflow: "auto", border: "1px solid #dcdce4", borderRadius: 4, padding: 8 }, children: collectionTypes.length === 0 ? /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "epsilon", textColor: "neutral600", children: t("sitemapModal.noCollectionTypes") }) : /* @__PURE__ */ jsxRuntime.jsx(designSystem.Flex, { direction: "column", alignItems: "start", gap: 3, children: collectionTypes.map((ct) => /* @__PURE__ */ jsxRuntime.jsx(
           designSystem.Checkbox,
           {
             checked: selectedIds.includes(ct.id),
@@ -463,12 +466,7 @@ function SitemapDefinitionModal({
               if (checked === true) setSelectedIds((prev) => prev.includes(ct.id) ? prev : [...prev, ct.id]);
               else setSelectedIds((prev) => prev.filter((id) => id !== ct.id));
             },
-            children: [
-              ct.type,
-              " (lang: ",
-              ct.langcode,
-              ")"
-            ]
+            children: t("sitemapModal.collectionTypeItem", { type: ct.type, langcode: ct.langcode })
           },
           ct.id
         )) }) })
@@ -478,17 +476,19 @@ function SitemapDefinitionModal({
         {
           checked: includeCustomUrls,
           onCheckedChange: (checked) => setIncludeCustomUrls(checked === true),
-          children: "Include custom URLs (pages) in this sitemap"
+          children: t("sitemapModal.includeCustomUrls")
         }
       ) })
     ] }),
     /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Modal.Footer, { children: [
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { variant: "tertiary", onClick: onClose, children: "Cancel" }),
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { onClick: handleSubmit, children: "Save" })
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { variant: "tertiary", onClick: onClose, children: t("common.cancel") }),
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { onClick: handleSubmit, children: t("common.save") })
     ] })
   ] }) });
 }
 const Settings = () => {
+  const { formatMessage } = reactIntl.useIntl();
+  const t = (id, values) => formatMessage({ id: index.getTrad(id) }, values);
   const [collectionTypes, setCollectionTypes] = react.useState([]);
   const [customURLs, setCustomURLs] = react.useState([]);
   const [modalOpen, setModalOpen] = react.useState(false);
@@ -514,7 +514,7 @@ const Settings = () => {
         setCollectionTypes(data.results);
       } catch (err) {
         console.error(err);
-        alert("An unexpected error occurred");
+        alert(t("error.unexpected"));
       }
     };
     fetchData();
@@ -600,7 +600,7 @@ const Settings = () => {
       setEntryToDeleteType("");
     } catch (err) {
       console.error(err);
-      alert("An unexpected error occurred.");
+      alert(t("error.unexpected"));
     }
   };
   const handleInputChange = (setValue) => (event) => {
@@ -617,7 +617,7 @@ const Settings = () => {
       });
     } catch (err) {
       console.error(JSON.stringify(err));
-      alert("An unexpected error occurred.");
+      alert(t("error.unexpected"));
     }
   };
   const getCollectionTypeLabel = (id) => {
@@ -642,58 +642,50 @@ const Settings = () => {
   return /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Main, { children: [
     /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { paddingLeft: 10, paddingTop: 8, paddingBottom: 8, paddingRight: 10, children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Grid.Root, { gap: 4, children: [
       /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { col: 6, children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Box, { width: "100%", children: [
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "alpha", as: "h1", children: "Sitemap" }),
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { color: "neutral400", children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "epsilon", as: "p", children: "Settings for the sitemap XML" }) })
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "alpha", as: "h1", children: t("plugin.name") }),
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { color: "neutral400", children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "epsilon", as: "p", children: t("page.subtitle") }) })
       ] }) }),
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { col: 6, children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { textAlign: "right", width: "100%", children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.LinkButton, { variant: "default", marginRight: 2, isExternal: true, href: "/api/strapi-5-sitemap-plugin/sitemap.xml", children: "Show Sitemap" }) }) })
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Grid.Item, { col: 6, children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { textAlign: "right", width: "100%", children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.LinkButton, { variant: "default", marginRight: 2, isExternal: true, href: "/api/strapi-5-sitemap-plugin/sitemap.xml", children: t("page.showSitemap") }) }) })
     ] }) }),
     /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Box, { paddingLeft: 10, paddingRight: 10, paddingBottom: 10, children: [
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { marginBottom: 4, children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "beta", as: "h2", children: "Base URL" }) }),
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { marginBottom: 4, children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "beta", as: "h2", children: t("baseUrl.title") }) }),
       /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Flex, { gap: 2, children: [
-        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { name: "baseURL", required: true, width: "100%", hint: `What is your base URL? (e. g. https://www.example.com)`, children: [
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: "Base URL" }),
+        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { name: "baseURL", required: true, width: "100%", hint: t("baseUrl.hint"), children: [
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: t("baseUrl.label") }),
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Input, { value: baseURL, onChange: handleInputChange(setBaseURL) }),
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Hint, {})
         ] }),
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { variant: "default", marginRight: 2, onClick: saveOptions, children: "Save" })
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { variant: "default", marginRight: 2, onClick: saveOptions, children: t("common.save") })
       ] }),
       /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Box, { marginTop: 8, children: [
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { marginBottom: 4, children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "beta", as: "h2", children: "Sitemap Settings" }) }),
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { marginBottom: 4, children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "beta", as: "h2", children: t("sitemapSettings.title") }) }),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { marginBottom: 2, children: /* @__PURE__ */ jsxRuntime.jsx(
           designSystem.Checkbox,
           {
             checked: useSitemapIndex,
             onCheckedChange: (checked) => setUseSitemapIndex(checked === true),
-            children: "Use sitemap index with multiple sitemaps"
+            children: t("sitemapSettings.useIndex")
           }
         ) }),
-        /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Typography, { variant: "epsilon", as: "p", textColor: "neutral600", marginTop: 1, children: [
-          "When enabled, sitemap.xml becomes the index; each entry below generates sitemap-",
-          "{name}",
-          ".xml."
-        ] }),
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "epsilon", as: "p", textColor: "neutral600", marginTop: 1, children: t("sitemapSettings.indexHint", { file: "sitemap-{name}.xml" }) }),
         /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Box, { marginTop: 3, padding: 3, style: { borderRadius: 4, border: "1px solid #eaeaef" }, children: [
-          /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Typography, { variant: "epsilon", as: "p", textColor: "neutral600", children: [
-            "For public access to individual sitemaps (sitemap-",
-            "{name}",
-            ".xml), enable the permission:"
-          ] }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "epsilon", as: "p", textColor: "neutral600", children: t("sitemapSettings.permissionHint", { file: "sitemap-{name}.xml" }) }),
           /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Typography, { variant: "epsilon", as: "p", textColor: "neutral700", marginTop: 1, children: [
             /* @__PURE__ */ jsxRuntime.jsx("code", { style: { fontFamily: "monospace", fontSize: "13px", padding: "2px 6px", borderRadius: 4 }, children: "getSitemapBySlug" }),
             " ",
-            "in Users & Permissions → Public → Strapi-5-sitemap-plugin"
+            t("sitemapSettings.permissionLocation")
           ] })
         ] })
       ] }),
       useSitemapIndex && /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { marginTop: 4, children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Table, { colCount: 4, rowCount: 4, footer: /* @__PURE__ */ jsxRuntime.jsx(designSystem.TFooter, { icon: /* @__PURE__ */ jsxRuntime.jsx(icons.Plus, {}), onClick: () => {
         setSitemapEditIndex(null);
         setSitemapModalOpen(true);
-      }, children: "Add sitemap" }), children: [
+      }, children: t("sitemapSettings.addSitemap") }), children: [
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Thead, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Tr, { children: [
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: "Name" }) }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: "Collection Types" }) }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: "Custom URLs" }) }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.VisuallyHidden, { children: "Actions" }) })
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: t("sitemapSettings.name") }) }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: t("sitemapSettings.collectionTypes") }) }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: t("sitemapSettings.customUrls") }) }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.VisuallyHidden, { children: t("common.actions") }) })
         ] }) }),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Tbody, { children: sitemapDefinitions.map((def, index2) => /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Tr, { children: [
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.Td, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Typography, { variant: "sigma", children: [
@@ -702,30 +694,30 @@ const Settings = () => {
             ".xml"
           ] }) }),
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.Td, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: (def.collectionTypeConfigIds || []).map(getCollectionTypeLabel).join(", ") || "—" }) }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Td, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: def.includeCustomUrls ? "Yes" : "No" }) }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Td, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: def.includeCustomUrls ? t("common.yes") : t("common.no") }) }),
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.Td, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Flex, { gap: 1, children: [
             /* @__PURE__ */ jsxRuntime.jsx(designSystem.IconButton, { onClick: () => {
               setSitemapEditIndex(index2);
               setSitemapModalOpen(true);
-            }, label: "Edit", children: /* @__PURE__ */ jsxRuntime.jsx(icons.Pencil, {}) }),
-            /* @__PURE__ */ jsxRuntime.jsx(designSystem.IconButton, { onClick: () => handleDeleteSitemapDef(index2), label: "Delete", children: /* @__PURE__ */ jsxRuntime.jsx(icons.Trash, {}) })
+            }, label: t("common.edit"), children: /* @__PURE__ */ jsxRuntime.jsx(icons.Pencil, {}) }),
+            /* @__PURE__ */ jsxRuntime.jsx(designSystem.IconButton, { onClick: () => handleDeleteSitemapDef(index2), label: t("common.delete"), children: /* @__PURE__ */ jsxRuntime.jsx(icons.Trash, {}) })
           ] }) })
         ] }, index2)) })
       ] }) }),
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { variant: "default", marginTop: 3, onClick: saveOptions, children: "Save" })
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { variant: "default", marginTop: 3, onClick: saveOptions, children: t("common.save") })
     ] }),
     /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Box, { paddingLeft: 10, paddingRight: 10, paddingBottom: 10, children: [
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { marginBottom: 4, children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "beta", as: "h2", children: "Collection Types" }) }),
-      /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Table, { colCount: 10, rowCount: 6, footer: /* @__PURE__ */ jsxRuntime.jsx(designSystem.TFooter, { icon: /* @__PURE__ */ jsxRuntime.jsx(icons.Plus, {}), onClick: () => setModalOpen(true), children: "Add another field to this collection type" }), children: [
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { marginBottom: 4, children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "beta", as: "h2", children: t("collectionTypes.title") }) }),
+      /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Table, { colCount: 10, rowCount: 6, footer: /* @__PURE__ */ jsxRuntime.jsx(designSystem.TFooter, { icon: /* @__PURE__ */ jsxRuntime.jsx(icons.Plus, {}), onClick: () => setModalOpen(true), children: t("collectionTypes.addField") }), children: [
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Thead, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Tr, { children: [
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: "Type" }) }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: "Lang Code" }) }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: "Pattern" }) }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: "Priority" }) }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: "Change Frequency" }) }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: "Add last modification date" }) }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: "Thumbnail" }) }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.VisuallyHidden, { children: "Actions" }) })
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: t("collectionTypes.type") }) }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: t("collectionTypes.langcode") }) }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: t("collectionTypes.pattern") }) }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: t("collectionTypes.priority") }) }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: t("collectionTypes.frequency") }) }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: t("collectionTypes.lastModified") }) }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: t("collectionTypes.thumbnail") }) }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.VisuallyHidden, { children: t("common.actions") }) })
         ] }) }),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Tbody, { children: collectionTypes.length > 0 && collectionTypes.map((collectionType, index2) => /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Tr, { children: [
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.Td, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: collectionType.type }) }),
@@ -737,39 +729,39 @@ const Settings = () => {
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.Td, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: collectionType.thumbnail }) }),
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.Td, {}),
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.Td, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Flex, { gap: 1, children: [
-            /* @__PURE__ */ jsxRuntime.jsx(designSystem.IconButton, { onClick: () => handleEdit(collectionType, "collectionType"), label: "Edit", children: /* @__PURE__ */ jsxRuntime.jsx(icons.Pencil, {}) }),
-            /* @__PURE__ */ jsxRuntime.jsx(designSystem.IconButton, { onClick: () => handleDelete(collectionType, "collectionType"), label: "Delete", children: /* @__PURE__ */ jsxRuntime.jsx(icons.Trash, {}) })
+            /* @__PURE__ */ jsxRuntime.jsx(designSystem.IconButton, { onClick: () => handleEdit(collectionType, "collectionType"), label: t("common.edit"), children: /* @__PURE__ */ jsxRuntime.jsx(icons.Pencil, {}) }),
+            /* @__PURE__ */ jsxRuntime.jsx(designSystem.IconButton, { onClick: () => handleDelete(collectionType, "collectionType"), label: t("common.delete"), children: /* @__PURE__ */ jsxRuntime.jsx(icons.Trash, {}) })
           ] }) })
         ] }, index2)) })
       ] })
     ] }),
     /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Box, { paddingLeft: 10, paddingRight: 10, paddingBottom: 10, children: [
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { marginBottom: 4, children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "beta", as: "h2", children: "Custom URLs" }) }),
-      /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Table, { colCount: 10, rowCount: 6, footer: /* @__PURE__ */ jsxRuntime.jsx(designSystem.TFooter, { icon: /* @__PURE__ */ jsxRuntime.jsx(icons.Plus, {}), onClick: () => setCustomURLsModalOpen(true), children: "Add another custom URL" }), children: [
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { marginBottom: 4, children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "beta", as: "h2", children: t("customUrls.title") }) }),
+      /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Table, { colCount: 10, rowCount: 6, footer: /* @__PURE__ */ jsxRuntime.jsx(designSystem.TFooter, { icon: /* @__PURE__ */ jsxRuntime.jsx(icons.Plus, {}), onClick: () => setCustomURLsModalOpen(true), children: t("customUrls.add") }), children: [
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Thead, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Tr, { children: [
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: "Slug" }) }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: "Priority" }) }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: "Change Frequency" }) }),
-          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.VisuallyHidden, { children: "Actions" }) })
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: t("customUrls.slug") }) }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: t("collectionTypes.priority") }) }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: t("collectionTypes.frequency") }) }),
+          /* @__PURE__ */ jsxRuntime.jsx(designSystem.Th, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.VisuallyHidden, { children: t("common.actions") }) })
         ] }) }),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Tbody, { children: customURLs.length > 0 && customURLs.map((customURL, index2) => /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Tr, { children: [
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.Td, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: customURL.slug }) }),
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.Td, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: customURL.priority }) }),
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.Td, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "sigma", children: customURL.frequency }) }),
           /* @__PURE__ */ jsxRuntime.jsx(designSystem.Td, { children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Flex, { gap: 1, children: [
-            /* @__PURE__ */ jsxRuntime.jsx(designSystem.IconButton, { onClick: () => handleEdit(customURL, "customURL"), label: "Edit", children: /* @__PURE__ */ jsxRuntime.jsx(icons.Pencil, {}) }),
-            /* @__PURE__ */ jsxRuntime.jsx(designSystem.IconButton, { onClick: () => handleDelete(customURL, "customURL"), label: "Delete", children: /* @__PURE__ */ jsxRuntime.jsx(icons.Trash, {}) })
+            /* @__PURE__ */ jsxRuntime.jsx(designSystem.IconButton, { onClick: () => handleEdit(customURL, "customURL"), label: t("common.edit"), children: /* @__PURE__ */ jsxRuntime.jsx(icons.Pencil, {}) }),
+            /* @__PURE__ */ jsxRuntime.jsx(designSystem.IconButton, { onClick: () => handleDelete(customURL, "customURL"), label: t("common.delete"), children: /* @__PURE__ */ jsxRuntime.jsx(icons.Trash, {}) })
           ] }) })
         ] }, index2)) })
       ] })
     ] }),
     /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Box, { paddingLeft: 10, paddingRight: 10, paddingBottom: 10, children: [
       /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Box, { marginBottom: 4, children: [
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { marginBottom: 2, children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "beta", as: "h2", children: "Excluded URLs" }) }),
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "epsilon", as: "p", textColor: "neutral600", children: "URL paths to exclude from the sitemap (one per line). E.g. /index if you use Custom URL for / and want to avoid duplicate or 404 entries." })
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Box, { marginBottom: 2, children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "beta", as: "h2", children: t("excludedUrls.title") }) }),
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { variant: "epsilon", as: "p", textColor: "neutral600", children: t("excludedUrls.description") })
       ] }),
-      /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { name: "excludedUrls", width: "100%", hint: "One path per line, e.g. /index", children: [
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: "Excluded paths" }),
+      /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Field.Root, { name: "excludedUrls", width: "100%", hint: t("excludedUrls.hint"), children: [
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Label, { children: t("excludedUrls.label") }),
         /* @__PURE__ */ jsxRuntime.jsx(
           "textarea",
           {
@@ -782,7 +774,7 @@ const Settings = () => {
         ),
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Field.Hint, {})
       ] }),
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { variant: "default", marginTop: 2, onClick: saveOptions, children: "Save options" })
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { variant: "default", marginTop: 2, onClick: saveOptions, children: t("common.saveOptions") })
     ] }),
     modalOpen && /* @__PURE__ */ jsxRuntime.jsx(CollectionTypeModal, { isOpen: modalOpen, setModalOpen, setNewCollectionTypeAdded, typeToEdit, setTypeToEdit, editID, setEditID }),
     customURLsModalOpen && /* @__PURE__ */ jsxRuntime.jsx(CustomURLModal, { isOpen: customURLsModalOpen, setModalOpen: setCustomURLsModalOpen, setNewCustomURLAdded, typeToEdit, setTypeToEdit, editID, setEditID }),
@@ -800,15 +792,15 @@ const Settings = () => {
       }
     ),
     deleteModalOpen && /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Root, { open: deleteModalOpen, onOpenChange: setDeleteModalOpen, children: /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Modal.Content, { children: [
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Header, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Title, { children: "Confirm Delete" }) }),
-      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Body, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { children: "Are you sure you want to delete this entry?" }) }),
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Header, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Title, { children: t("delete.title") }) }),
+      /* @__PURE__ */ jsxRuntime.jsx(designSystem.Modal.Body, { children: /* @__PURE__ */ jsxRuntime.jsx(designSystem.Typography, { children: t("delete.confirm") }) }),
       /* @__PURE__ */ jsxRuntime.jsxs(designSystem.Modal.Footer, { children: [
         /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { variant: "tertiary", onClick: () => {
           setDeleteModalOpen(false);
           setEntryToDelete(null);
           setEntryToDeleteType("");
-        }, children: "Cancel" }),
-        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { variant: "danger", onClick: confirmDelete, children: "Delete" })
+        }, children: t("common.cancel") }),
+        /* @__PURE__ */ jsxRuntime.jsx(designSystem.Button, { variant: "danger", onClick: confirmDelete, children: t("common.delete") })
       ] })
     ] }) })
   ] });

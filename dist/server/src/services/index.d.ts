@@ -35,6 +35,7 @@ declare const _default: {
         getLocales(): Promise<any>;
         getAllowedFields(contentTypeSingularName: any): Promise<{
             allowedFields: any[];
+            mediaFields: any[];
             slug: any;
         }>;
         updateAdminData(data: any): Promise<{

@@ -449,7 +449,8 @@ const service = ({ strapi }) => ({
       const collections = [];
       const sitemap = [];
       for (const sitemapEntry of sitemapEntries) {
-        const isValidThumbnail = sitemapEntry.thumbnail && sitemapEntry.thumbnail !== "-";
+        const contentTypeUid = `api::${sitemapEntry.type}.${sitemapEntry.type}`;
+        const isValidThumbnail = sitemapEntry.thumbnail && sitemapEntry.thumbnail !== "-" && strapi.contentTypes[contentTypeUid]?.attributes?.[sitemapEntry.thumbnail]?.type === "media";
         let populate = isValidThumbnail ? { [sitemapEntry.thumbnail]: true } : void 0;
         if (sitemapEntry.populateLinkedModels === "true") {
           const linkedModels = this.parseTableReferences(sitemapEntry.pattern);
@@ -460,12 +461,16 @@ const service = ({ strapi }) => ({
             };
           }
         }
-        const entries = await strapi.documents(`api::${sitemapEntry.type}.${sitemapEntry.type}`).findMany({
+        const entries = await strapi.documents(contentTypeUid).findMany({
           locale: sitemapEntry.langcode === "-" ? void 0 : sitemapEntry.langcode,
           status: "published",
           populate
         });
-        collections.push({ ...sitemapEntry, entries });
+        collections.push({
+          ...sitemapEntry,
+          thumbnail: isValidThumbnail ? sitemapEntry.thumbnail : "",
+          entries
+        });
       }
       collections.forEach((collection) => {
         const {
@@ -607,7 +612,11 @@ const service = ({ strapi }) => ({
       (type) => type.info.singularName === contentTypeSingularName
     );
     const fields = [];
+    const mediaFields = [];
     Object.entries(contentType2.attributes).forEach(([fieldName, field]) => {
+      if (field.type === "media") {
+        mediaFields.push(fieldName);
+      }
       if (!systemFields.includes(fieldName) && field.type !== "relation" && field.type !== "component") {
         fields.push(fieldName);
       } else if (field.type === "relation" && field.relation.endsWith("ToOne") && !["createdBy", "updatedBy"].includes(fieldName)) {
@@ -624,6 +633,7 @@ const service = ({ strapi }) => ({
     }
     return {
       allowedFields: fields,
+      mediaFields,
       slug: contentType2.info.pluralName
     };
   },

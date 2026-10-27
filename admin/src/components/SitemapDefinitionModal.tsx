@@ -1,5 +1,7 @@
 import { Button, Field, Modal, Checkbox, Box, Typography, Flex } from "@strapi/design-system";
 import React, { useState, useEffect } from "react";
+import { useIntl } from "react-intl";
+import { getTrad } from "../utils/getTrad";
 
 export interface SitemapDefinition {
 	name: string;
@@ -20,6 +22,8 @@ export default function SitemapDefinitionModal({
 	collectionTypes: Array<{ id: number; type: string; langcode: string }>;
 	initialData: SitemapDefinition | null;
 }) {
+	const { formatMessage } = useIntl();
+	const t = (id: string, values?: Record<string, string>) => formatMessage({ id: getTrad(id) }, values);
 	const [name, setName] = useState("");
 	const [selectedIds, setSelectedIds] = useState<number[]>([]);
 	const [includeCustomUrls, setIncludeCustomUrls] = useState(false);
@@ -54,24 +58,24 @@ export default function SitemapDefinitionModal({
 			<Modal.Content>
 				<Modal.Header>
 					<Modal.Title>
-						{initialData ? "Edit sitemap" : "Add sitemap"}
+						{initialData ? t('sitemapModal.edit') : t('sitemapModal.add')}
 					</Modal.Title>
 				</Modal.Header>
 				<Modal.Body>
 					<Field.Root name="sitemapName" required marginBottom={4}>
-						<Field.Label>Name (slug for sitemap-{"{name}"}.xml)</Field.Label>
+						<Field.Label>{t('sitemapModal.nameLabel', { file: 'sitemap-{name}.xml' })}</Field.Label>
 						<Field.Input
 							value={name}
 							onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
-							placeholder="e.g. blog, pages"
+							placeholder={t('sitemapModal.namePlaceholder')}
 						/>
 					</Field.Root>
 					<Field.Root name="collectionTypes" marginBottom={4}>
-						<Field.Label>Collection Types (multiple selection)</Field.Label>
-						<Field.Hint>Which configured collection types should appear in this sitemap?</Field.Hint>
+						<Field.Label>{t('sitemapModal.collectionTypesLabel')}</Field.Label>
+						<Field.Hint>{t('sitemapModal.collectionTypesHint')}</Field.Hint>
 						<Box paddingTop={2} style={{ maxHeight: 200, overflow: "auto", border: "1px solid #dcdce4", borderRadius: 4, padding: 8 } as React.CSSProperties}>
 							{collectionTypes.length === 0 ? (
-								<Typography variant="epsilon" textColor="neutral600">First add collection types above.</Typography>
+								<Typography variant="epsilon" textColor="neutral600">{t('sitemapModal.noCollectionTypes')}</Typography>
 							) : (
 								<Flex direction="column" alignItems="start" gap={3}>
 									{collectionTypes.map((ct) => (
@@ -83,7 +87,7 @@ export default function SitemapDefinitionModal({
 												else setSelectedIds((prev) => prev.filter((id) => id !== ct.id));
 											}}
 										>
-											{ct.type} (lang: {ct.langcode})
+											{t('sitemapModal.collectionTypeItem', { type: ct.type, langcode: ct.langcode })}
 										</Checkbox>
 									))}
 								</Flex>
@@ -95,13 +99,13 @@ export default function SitemapDefinitionModal({
 							checked={includeCustomUrls}
 							onCheckedChange={(checked: boolean | 'indeterminate') => setIncludeCustomUrls(checked === true)}
 						>
-							Include custom URLs (pages) in this sitemap
+							{t('sitemapModal.includeCustomUrls')}
 						</Checkbox>
 					</Field.Root>
 				</Modal.Body>
 				<Modal.Footer>
-					<Button variant="tertiary" onClick={onClose}>Cancel</Button>
-					<Button onClick={handleSubmit}>Save</Button>
+					<Button variant="tertiary" onClick={onClose}>{t('common.cancel')}</Button>
+					<Button onClick={handleSubmit}>{t('common.save')}</Button>
 				</Modal.Footer>
 			</Modal.Content>
 		</Modal.Root>
